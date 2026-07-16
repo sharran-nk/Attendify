@@ -97,12 +97,18 @@ export function usePWAInstall() {
     setState(prev => ({ ...prev, hasDismissed: true }));
   };
 
+  const showPrompt = () => {
+    localStorage.setItem('pwa-prompt-dismissed', 'false');
+    setState(prev => ({ ...prev, hasDismissed: false }));
+  };
+
   const shouldShowPrompt = state.isInstallable && !state.isInstalled && !state.hasDismissed;
 
   return {
     ...state,
     shouldShowPrompt,
     promptInstall,
-    dismissPrompt
+    dismissPrompt,
+    showPrompt
   };
 }

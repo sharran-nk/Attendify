@@ -8,10 +8,21 @@ import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { useApp } from '@/contexts/AppContext';
+import { Download } from 'lucide-react';
+import { usePWAInstall } from '@/hooks/usePWAInstall';
 
 export default function Dashboard() {
   const { user } = useAuth();
   const { subjects } = useApp();
+  const { isInstallable, isInstalled, showPrompt, promptInstall, isIOS } = usePWAInstall();
+
+  const handleInstallClick = () => {
+    if (isIOS) {
+      showPrompt();
+    } else {
+      promptInstall();
+    }
+  };
 
   const greeting = () => {
     const hour = new Date().getHours();
@@ -31,7 +42,18 @@ export default function Dashboard() {
     <PageContainer
       title=""
       subtitle=""
-      rightAction={null} // Removed from standard header as we build custom hero
+      rightAction={
+        isInstallable && !isInstalled ? (
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={handleInstallClick}
+            className="flex items-center gap-2 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm font-medium hover:bg-primary/20 transition-colors"
+          >
+            <Download className="w-4 h-4" />
+            Install App
+          </motion.button>
+        ) : null
+      }
     >
       <div className="space-y-5 pb-8">
         
