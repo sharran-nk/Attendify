@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Share, PlusSquare, X, Download, Smartphone } from 'lucide-react';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
 
+import { toast } from 'sonner';
+
 export function InstallPrompt() {
   const { shouldShowPrompt, isIOS, promptInstall, dismissPrompt } = usePWAInstall();
 
@@ -72,7 +74,13 @@ export function InstallPrompt() {
                 </div>
                 
                 <button
-                  onClick={promptInstall}
+                  onClick={() => {
+                    promptInstall().then(success => {
+                      if (!success) {
+                        toast.info("Please click the install icon in your browser's address bar.");
+                      }
+                    });
+                  }}
                   className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 px-4 rounded-xl shadow-md transition-all active:scale-[0.98]"
                 >
                   Install App

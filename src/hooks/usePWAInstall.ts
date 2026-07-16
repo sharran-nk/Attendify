@@ -72,11 +72,18 @@ export function usePWAInstall() {
       console.log('PWA was installed');
     };
 
+    const handleShowPromptEvent = () => {
+      setState(prev => ({ ...prev, hasDismissed: false }));
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
+    window.addEventListener('show-pwa-prompt', handleShowPromptEvent);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
+      window.removeEventListener('show-pwa-prompt', handleShowPromptEvent);
     };
   }, []);
 
@@ -101,7 +108,7 @@ export function usePWAInstall() {
 
   const showPrompt = () => {
     localStorage.setItem('pwa-prompt-dismissed', 'false');
-    setState(prev => ({ ...prev, hasDismissed: false }));
+    window.dispatchEvent(new Event('show-pwa-prompt'));
   };
 
   const shouldShowPrompt = state.isInstallable && !state.isInstalled && !state.hasDismissed;
