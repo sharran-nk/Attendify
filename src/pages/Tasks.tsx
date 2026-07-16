@@ -37,14 +37,17 @@ export default function Tasks() {
   const handleSubmit = () => {
     if (!formData.title.trim()) return;
 
-    addTask({
+    const newTaskData: any = {
       title: formData.title,
-      description: formData.description || undefined,
-      subjectId: formData.subjectId || undefined,
       dueDate: formData.dueDate,
-      dueTime: formData.dueTime || undefined,
       completed: false,
-    });
+    };
+    
+    if (formData.description) newTaskData.description = formData.description;
+    if (formData.subjectId) newTaskData.subjectId = formData.subjectId;
+    if (formData.dueTime) newTaskData.dueTime = formData.dueTime;
+
+    addTask(newTaskData);
 
     closeDialog();
   };
