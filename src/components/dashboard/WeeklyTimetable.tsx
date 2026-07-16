@@ -31,42 +31,31 @@ export function WeeklyTimetable() {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
-      <div className="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-        <h2 className="text-lg font-bold">Weekly Timetable</h2>
-        <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleImageUpload} />
-        <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} className="rounded-lg text-xs flex items-center gap-2">
-          <Camera className="w-4 h-4" /> Upload Timetable
-        </Button>
+    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-4 sm:p-5 flex items-center justify-between">
+      <div 
+        className={`flex items-center gap-4 ${settings.timetableImage ? 'cursor-pointer' : ''}`}
+        onClick={() => { if (settings.timetableImage) setIsOpen(true); }}
+      >
+        <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+          <ImageIcon className="w-6 h-6" />
+        </div>
+        <div>
+          <h2 className="font-bold text-base">Weekly Timetable</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            {settings.timetableImage ? "Tap to view schedule" : "No image uploaded"}
+          </p>
+        </div>
       </div>
-
-      <div className="p-4 sm:p-6 min-h-[200px] flex items-center justify-center">
-        {settings.timetableImage ? (
-          <div className="w-full relative group cursor-pointer" onClick={() => setIsOpen(true)}>
-            <img 
-              src={settings.timetableImage} 
-              alt="Timetable" 
-              className="w-full h-auto rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 object-contain max-h-[600px] transition-opacity group-hover:opacity-90"
-            />
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 rounded-xl">
-              <span className="bg-white/90 text-black px-4 py-2 rounded-full text-sm font-medium shadow-lg backdrop-blur-sm">
-                Click to expand
-              </span>
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center text-center space-y-4 py-8">
-            <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-2">
-              <ImageIcon className="w-8 h-8 text-blue-500" />
-            </div>
-            <h3 className="text-xl font-bold">No Timetable Uploaded</h3>
-            <p className="text-slate-500 dark:text-slate-400 max-w-sm">
-              Upload an image of your timetable to view it here.
-            </p>
-            <Button onClick={() => fileInputRef.current?.click()} className="mt-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl">
-              Upload Timetable Image
-            </Button>
-          </div>
+      
+      <div className="flex items-center gap-2">
+        <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleImageUpload} />
+        <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} className="rounded-lg h-9 w-9 p-0" title="Upload New Timetable">
+          <Camera className="w-4 h-4" />
+        </Button>
+        {settings.timetableImage && (
+          <Button variant="default" size="sm" onClick={() => setIsOpen(true)} className="rounded-lg h-9 px-4">
+            View
+          </Button>
         )}
       </div>
 
