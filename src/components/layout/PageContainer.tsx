@@ -3,8 +3,8 @@ import { ReactNode } from 'react';
 
 interface PageContainerProps {
   children: ReactNode;
-  title?: string;
-  subtitle?: string;
+  title?: ReactNode | string;
+  subtitle?: ReactNode | string;
   rightAction?: ReactNode;
 }
 

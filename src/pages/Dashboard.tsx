@@ -41,54 +41,32 @@ export default function Dashboard() {
 
   return (
     <PageContainer
-      title=""
-      subtitle=""
+      title={
+        <span className="flex items-center gap-1.5">
+          {greeting()},
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500 dark:from-blue-400 dark:to-purple-400">
+            {getFirstName()}
+          </span>
+        </span>
+      }
+      subtitle={todayStr.toUpperCase()}
       rightAction={
-        !isInstalled ? (
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={() => showPrompt()}
-            className="flex items-center gap-2 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm font-medium hover:bg-primary/20 transition-colors"
-          >
-            <Download className="w-4 h-4" />
-            Install App
-          </motion.button>
-        ) : null
+        <div className="flex items-center gap-3">
+          <ModeToggle />
+          {!isInstalled ? (
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => showPrompt()}
+              className="flex items-center gap-2 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm font-medium hover:bg-primary/20 transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              Install App
+            </motion.button>
+          ) : null}
+        </div>
       }
     >
       <div className="space-y-5 pb-8">
-        
-        {/* HERO SECTION */}
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-lg dark:shadow-2xl border border-slate-100 dark:border-none"
-        >
-          {/* Abstract glowing blobs */}
-          <div className="absolute top-[-20%] left-[-10%] w-[250px] h-[250px] bg-blue-500/10 dark:bg-blue-600/30 rounded-full blur-[60px]" />
-          <div className="absolute bottom-[-20%] right-[-10%] w-[200px] h-[200px] bg-purple-500/10 dark:bg-purple-600/30 rounded-full blur-[60px]" />
-          
-          <div className="relative z-10 flex flex-col md:flex-row justify-between p-6 md:p-8 gap-6">
-            <div className="space-y-3">
-              <div>
-                <p className="text-blue-600 dark:text-blue-200 font-medium tracking-wide mb-1 text-xs uppercase">{todayStr}</p>
-                <h1 className="text-[28px] md:text-3xl font-bold tracking-tight leading-tight">
-                  {greeting()}, <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500 dark:from-blue-400 dark:to-purple-400">
-                    {getFirstName()}
-                  </span>
-                </h1>
-              </div>
-              <p className="text-slate-600 dark:text-slate-300 max-w-md text-[13px] md:text-sm leading-relaxed">
-                Stay on top of your academic journey. You have a great day ahead to crush your goals and maintain your attendance streak.
-              </p>
-              <div className="pt-1">
-                <ModeToggle />
-              </div>
-            </div>
-
-          </div>
-        </motion.div>
 
         {/* 1. WEEKLY TIMETABLE */}
         <WeeklyTimetable />
