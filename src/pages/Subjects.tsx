@@ -36,19 +36,31 @@ export default function Subjects() {
   const [formData, setFormData] = useState({
     name: '',
     instructor: '',
-    credits: 3,
+    credits: '' as number | '',
     totalClasses: 0,
     attendedClasses: 0,
     color: subjectColors[0],
   });
 
   const handleSubmit = () => {
-    if (!formData.name.trim()) return;
+    if (!formData.name.trim()) {
+      alert("Please enter a subject name.");
+      return;
+    }
+    if (!formData.credits || formData.credits <= 0) {
+      alert("Please enter a valid number of credits (greater than 0).");
+      return;
+    }
+
+    const payload = {
+      ...formData,
+      credits: Number(formData.credits)
+    };
 
     if (editingSubject) {
-      updateSubject(editingSubject.id, formData);
+      updateSubject(editingSubject.id, payload);
     } else {
-      addSubject(formData);
+      addSubject(payload);
     }
 
     closeDialog();
@@ -91,7 +103,7 @@ export default function Subjects() {
     setFormData({
       name: subject.name,
       instructor: subject.instructor || '',
-      credits: subject.credits || 3,
+      credits: subject.credits || '',
       totalClasses: subject.totalClasses,
       attendedClasses: subject.attendedClasses,
       color: subject.color,
@@ -109,7 +121,7 @@ export default function Subjects() {
     setFormData({
       name: '',
       instructor: '',
-      credits: 3,
+      credits: '',
       totalClasses: 0,
       attendedClasses: 0,
       color: subjectColors[subjects.length % subjectColors.length],
@@ -553,12 +565,10 @@ export default function Subjects() {
                 <Label>Credits</Label>
                 <Input
                   type="number"
-                  min={1}
-                  max={10}
                   value={formData.credits}
                   onChange={(e) => setFormData(prev => ({
                     ...prev,
-                    credits: parseInt(e.target.value) || 1
+                    credits: e.target.value
                   }))}
                   className="ios-input"
                 />

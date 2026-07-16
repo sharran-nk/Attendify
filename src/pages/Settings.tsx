@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Moon, Sun, Bell, AlertTriangle, Percent, Info, LogOut, Clock, Cloud, CloudOff, RefreshCw } from 'lucide-react';
+import { Moon, Sun, Percent, Info, LogOut, Cloud, RefreshCw, Clock, Sparkles } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { useApp } from '@/contexts/AppContext';
@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 export default function Settings() {
   const { settings, updateSettings, subjects, isSyncing } = useApp();
@@ -154,6 +155,7 @@ export default function Settings() {
           </motion.div>
         </div>
 
+
         {/* Attendance Threshold */}
         <div className="space-y-1.5">
           <h2 className="text-[13px] font-medium text-muted-foreground px-1">Attendance</h2>
@@ -240,7 +242,7 @@ export default function Settings() {
             <div>
               <p className="font-medium">Attendify</p>
               <p className="text-sm text-muted-foreground mt-1">
-                Your personal attendance tracker. All data is stored locally on your device.
+                Your personal attendance tracker. All data is securely synced to your account.
               </p>
             </div>
           </div>

@@ -2,10 +2,9 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { 
   onAuthStateChanged, 
   signOut,
-  GoogleAuthProvider,
-  signInWithPopup,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  updateProfile,
   User as FirebaseUser
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
@@ -21,9 +20,8 @@ export interface User {
 interface AuthContextType {
     user: User | null;
     isLoading: boolean;
-    loginWithGoogle: () => Promise<void>;
     loginWithEmail: (email: string, pass: string) => Promise<void>;
-    signupWithEmail: (email: string, pass: string) => Promise<void>;
+    signupWithEmail: (email: string, pass: string, name: string) => Promise<void>;
     logout: () => Promise<void>;
 }
 
@@ -66,16 +64,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return () => unsubscribe();
     }, []);
 
-    const loginWithGoogle = async () => {
-        try {
-            const provider = new GoogleAuthProvider();
-            await signInWithPopup(auth, provider);
-        } catch (error) {
-            console.error('Google login failed:', error);
-            throw error;
-        }
-    };
-
     const loginWithEmail = async (email: string, pass: string) => {
         try {
             await signInWithEmailAndPassword(auth, email, pass);
@@ -85,9 +73,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    const signupWithEmail = async (email: string, pass: string) => {
+    const signupWithEmail = async (email: string, pass: string, name: string) => {
         try {
-            await createUserWithEmailAndPassword(auth, email, pass);
+            const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+            await updateProfile(userCredential.user, {
+                displayName: name
+            });
+            // Update the local user state so it reflects immediately
+            setUser(prev => prev ? { ...prev, name } : null);
         } catch (error) {
             console.error('Email signup failed:', error);
             throw error;
@@ -103,7 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, isLoading, loginWithGoogle, loginWithEmail, signupWithEmail, logout }}>
+        <AuthContext.Provider value={{ user, isLoading, loginWithEmail, signupWithEmail, logout }}>
             {children}
         </AuthContext.Provider>
     );

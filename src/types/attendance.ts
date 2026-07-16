@@ -56,4 +56,18 @@ export interface AppSettings {
   darkMode: boolean;
   reminderEnabled?: boolean;
   reminderTime?: string;
+  timetableTimes?: string[]; // Array of time strings, e.g., ["8:30", "9:20", ...]
+  timetableImage?: string; // Base64 image
+}
+
+export type DayOfWeek = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday';
+
+export interface TimetableSlot {
+  id: string; // e.g. "Monday-8:30"
+  day: DayOfWeek;
+  startTime: string; // "8:30"
+  isBreak: boolean; 
+  breakLabel?: string; 
+  subjectId?: string; // Links to a subject, can be matched by name or ID
+  subjectName?: string; // Fallback string if subjectId isn't linked yet
 }

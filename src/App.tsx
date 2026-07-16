@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { ThemeProvider } from "@/components/theme-provider";
 import { useAttendanceReminder } from "@/hooks/useAttendanceReminder";
+import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 
 const AppContent = () => {
   useAttendanceReminder();
@@ -32,6 +33,7 @@ const AppContent = () => {
           <Route path="*" element={<NotFound />} />
         </Routes>
         <TabBar />
+        <InstallPrompt />
       </div>
     </BrowserRouter>
   );

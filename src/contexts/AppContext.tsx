@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Subject, AttendanceEntry, Task, CoursePlan, AppSettings } from '@/types/attendance';
+import { Subject, AttendanceEntry, Task, CoursePlan, AppSettings, TimetableSlot } from '@/types/attendance';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
 import { 
@@ -13,6 +13,7 @@ interface AppContextType {
   tasks: Task[];
   coursePlans: CoursePlan[];
   settings: AppSettings;
+  timetable: TimetableSlot[];
   isSyncing: boolean;
 
   // Subject actions
@@ -37,6 +38,10 @@ interface AppContextType {
 
   // Settings actions
   updateSettings: (updates: Partial<AppSettings>) => Promise<void>;
+
+  // Timetable actions
+  updateTimetableSlot: (slot: TimetableSlot) => Promise<void>;
+  bulkUpdateTimetable: (slots: TimetableSlot[]) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -46,6 +51,7 @@ const defaultSettings: AppSettings = {
   darkMode: false,
   reminderEnabled: false,
   reminderTime: "08:00",
+  timetableTimes: ['8:30', '9:20', '10:10', '10:30', '11:20', '12:10', '1:30', '2:30', '3:20', '4:10', '5:10'],
 };
 
 const subjectColors = [
@@ -67,6 +73,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [coursePlans, setCoursePlans] = useState<CoursePlan[]>([]);
   const [settings, setSettings] = useState<AppSettings>(defaultSettings);
+  const [timetable, setTimetable] = useState<TimetableSlot[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
 
   // Auto-migration from localStorage on first login
@@ -162,6 +169,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setCoursePlans(snap.docs.map(d => d.data() as CoursePlan));
     }, (error) => console.error("Course plans sync error:", error));
 
+    const unsubTimetable = onSnapshot(collection(db, 'users', uid, 'timetable'), (snap) => {
+      setTimetable(snap.docs.map(d => d.data() as TimetableSlot));
+    }, (error) => console.error("Timetable sync error:", error));
+
     // Mark syncing as complete after a short delay (once initial reads finish)
     setTimeout(() => setIsSyncing(false), 1000);
 
@@ -171,6 +182,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       unsubAttendance();
       unsubTasks();
       unsubCoursePlans();
+      unsubTimetable();
     };
   }, [user]);
 
@@ -333,11 +345,37 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const updateSettings = async (updates: Partial<AppSettings>) => {
     if (!user) return;
-    // We update local state optimistically here because sometimes settings are needed immediately for UI renders
-    setSettings(prev => ({ ...prev, ...updates }));
-    
-    const settingsRef = doc(db, 'users', user.id, 'settings', 'current');
-    await setDoc(settingsRef, updates, { merge: true });
+    try {
+      await setDoc(doc(db, 'users', user.id, 'settings', 'current'), updates, { merge: true });
+      toast.success("Settings saved");
+    } catch (e: any) {
+      toast.error("Failed to update settings");
+    }
+  };
+
+  const updateTimetableSlot = async (slot: TimetableSlot) => {
+    if (!user) return;
+    try {
+      await setDoc(doc(db, 'users', user.id, 'timetable', slot.id), slot);
+    } catch (e: any) {
+      console.error(e);
+      toast.error("Failed to update timetable slot");
+    }
+  };
+
+  const bulkUpdateTimetable = async (slots: TimetableSlot[]) => {
+    if (!user) return;
+    try {
+      const batch = writeBatch(db);
+      slots.forEach(slot => {
+        batch.set(doc(db, 'users', user.id, 'timetable', slot.id), slot);
+      });
+      await batch.commit();
+      toast.success("Timetable saved");
+    } catch (e: any) {
+      console.error(e);
+      toast.error("Failed to save timetable");
+    }
   };
 
   return (
@@ -348,6 +386,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         tasks,
         coursePlans,
         settings,
+        timetable,
         isSyncing,
         addSubject,
         updateSubject,
@@ -362,6 +401,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         addCoursePlan,
         deleteCoursePlan,
         updateSettings,
+        updateTimetableSlot,
+        bulkUpdateTimetable,
       }}
     >
       {children}

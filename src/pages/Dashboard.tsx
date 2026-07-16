@@ -2,6 +2,7 @@ import { PageContainer } from '@/components/layout/PageContainer';
 import { QuickStats } from '@/components/dashboard/QuickStats';
 import { TodayClasses } from '@/components/dashboard/TodayClasses';
 import { AttendanceInsights } from '@/components/dashboard/AttendanceInsights';
+import { WeeklyTimetable } from '@/components/dashboard/WeeklyTimetable';
 import { ModeToggle } from '@/components/mode-toggle';
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
@@ -25,10 +26,6 @@ export default function Dashboard() {
   };
 
   const todayStr = format(new Date(), 'EEEE, MMMM d');
-
-  const totalAttended = subjects.reduce((sum, s) => sum + s.attendedClasses, 0);
-  const totalClasses = subjects.reduce((sum, s) => sum + s.totalClasses, 0);
-  const overallPercentage = totalClasses > 0 ? (totalAttended / totalClasses) * 100 : 0;
 
   return (
     <PageContainer
@@ -67,36 +64,13 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Overall Attendance Glass Card */}
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="flex-shrink-0 bg-slate-50 dark:bg-white/10 backdrop-blur-xl border border-slate-200 dark:border-white/20 p-5 rounded-xl flex flex-col items-center justify-center shadow-sm dark:shadow-inner min-w-[160px]"
-            >
-              <div className="relative">
-                <svg className="w-20 h-20 transform -rotate-90">
-                  <circle cx="40" cy="40" r="34" stroke="currentColor" strokeWidth="5" fill="none" className="text-slate-200 dark:text-slate-700/50" />
-                  <circle 
-                    cx="40" cy="40" r="34" 
-                    stroke="currentColor" 
-                    strokeWidth="5" 
-                    fill="none" 
-                    strokeDasharray="213.6" 
-                    strokeDashoffset={213.6 - (213.6 * overallPercentage) / 100}
-                    className="text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.5)] transition-all duration-1000 ease-out" 
-                  />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-xl font-bold tracking-tight">{overallPercentage.toFixed(0)}%</span>
-                </div>
-              </div>
-              <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-300 mt-3 uppercase tracking-wider">Overall</p>
-            </motion.div>
           </div>
         </motion.div>
 
-        {/* QUICK STATS CARDS */}
+        {/* 1. WEEKLY TIMETABLE */}
+        <WeeklyTimetable />
+
+        {/* 2. QUICK STATS CARDS */}
         <QuickStats />
 
         {/* MAIN CONTENT GRID */}
