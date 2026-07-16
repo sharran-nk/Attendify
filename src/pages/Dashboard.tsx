@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useApp } from '@/contexts/AppContext';
 import { Download } from 'lucide-react';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
+import { toast } from 'sonner';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -43,10 +44,20 @@ export default function Dashboard() {
       title=""
       subtitle=""
       rightAction={
-        isInstallable && !isInstalled ? (
+        !isInstalled ? (
           <motion.button
             whileTap={{ scale: 0.9 }}
-            onClick={handleInstallClick}
+            onClick={() => {
+              if (isIOS) {
+                showPrompt();
+              } else {
+                promptInstall().then(success => {
+                  if (!success && !isIOS) {
+                    toast.info("Click the install icon in your browser's address bar to install");
+                  }
+                });
+              }
+            }}
             className="flex items-center gap-2 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm font-medium hover:bg-primary/20 transition-colors"
           >
             <Download className="w-4 h-4" />

@@ -80,7 +80,7 @@ export function usePWAInstall() {
     };
   }, []);
 
-  const promptInstall = async () => {
+  const promptInstall = async (): Promise<boolean> => {
     if (state.deferredPrompt) {
       // Show the install prompt
       state.deferredPrompt.prompt();
@@ -89,7 +89,9 @@ export function usePWAInstall() {
       console.log(`User response to the install prompt: ${outcome}`);
       // We've used the prompt, and can't use it again, throw it away
       setState(prev => ({ ...prev, deferredPrompt: null }));
+      return outcome === 'accepted';
     }
+    return false;
   };
 
   const dismissPrompt = () => {
