@@ -10,6 +10,7 @@ import {
   InputOTPSlot,
   InputOTPSeparator,
 } from "@/components/ui/input-otp"
+import { ForgotPinDialog } from '@/components/auth/ForgotPinDialog';
 
 export default function Login() {
     const { loginWithEmail, signupWithEmail, user } = useAuth();
@@ -18,6 +19,7 @@ export default function Login() {
     // Global State
     const [isLoading, setIsLoading] = useState(false);
     const [isSignUp, setIsSignUp] = useState(false);
+    const [isForgotPinOpen, setIsForgotPinOpen] = useState(false);
     
     // Form State
     const [name, setName] = useState("");
@@ -132,9 +134,20 @@ export default function Login() {
                         </div>
 
                         <div className="space-y-2 w-full flex flex-col items-center">
-                            <label className="text-sm font-medium text-slate-700 dark:text-slate-300 w-full text-left ml-1">
-                                6-Digit PIN
-                            </label>
+                            <div className="flex justify-between w-full">
+                                <label className="text-sm font-medium text-slate-700 dark:text-slate-300 ml-1">
+                                    6-Digit PIN
+                                </label>
+                                {!isSignUp && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsForgotPinOpen(true)}
+                                        className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors font-medium mr-1"
+                                    >
+                                        Forgot PIN?
+                                    </button>
+                                )}
+                            </div>
                             <InputOTP maxLength={6} value={password} onChange={setPassword} className="gap-2">
                                 <InputOTPGroup>
                                     <InputOTPSlot index={0} className="w-10 h-12 sm:w-12 sm:h-14 text-lg border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950" />
@@ -178,6 +191,11 @@ export default function Login() {
                     </p>
                 </div>
             </motion.div>
+
+            <ForgotPinDialog 
+                isOpen={isForgotPinOpen} 
+                onClose={() => setIsForgotPinOpen(false)} 
+            />
         </div>
     );
 }
