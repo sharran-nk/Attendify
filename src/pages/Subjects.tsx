@@ -38,8 +38,8 @@ export default function Subjects() {
     name: '',
     instructor: '',
     credits: '' as number | '',
-    totalClasses: 0,
-    attendedClasses: 0,
+    totalClasses: '' as number | '',
+    attendedClasses: '' as number | '',
     color: subjectColors[0],
   });
 
@@ -55,7 +55,9 @@ export default function Subjects() {
 
     const payload = {
       ...formData,
-      credits: Number(formData.credits)
+      credits: Number(formData.credits),
+      totalClasses: Number(formData.totalClasses) || 0,
+      attendedClasses: Number(formData.attendedClasses) || 0,
     };
 
     if (editingSubject) {
@@ -127,8 +129,8 @@ export default function Subjects() {
       name: '',
       instructor: '',
       credits: '',
-      totalClasses: 0,
-      attendedClasses: 0,
+      totalClasses: '',
+      attendedClasses: '',
       color: subjectColors[subjects.length % subjectColors.length],
     });
   };
@@ -601,7 +603,7 @@ export default function Subjects() {
                   value={formData.totalClasses}
                   onChange={(e) => setFormData(prev => ({
                     ...prev,
-                    totalClasses: parseInt(e.target.value) || 0
+                    totalClasses: e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value) || 0)
                   }))}
                   className="ios-input"
                 />
@@ -611,13 +613,13 @@ export default function Subjects() {
                 <Input
                   type="number"
                   min={0}
-                  max={formData.totalClasses}
+                  max={Number(formData.totalClasses) || 0}
                   value={formData.attendedClasses}
                   onChange={(e) => setFormData(prev => ({
                     ...prev,
-                    attendedClasses: Math.min(
-                      parseInt(e.target.value) || 0,
-                      formData.totalClasses
+                    attendedClasses: e.target.value === '' ? '' : Math.min(
+                      Math.max(0, parseInt(e.target.value) || 0),
+                      Number(formData.totalClasses) || 0
                     )
                   }))}
                   className="ios-input"
