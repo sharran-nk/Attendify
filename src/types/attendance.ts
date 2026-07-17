@@ -18,6 +18,7 @@ export interface Subject {
   attendedClasses: number;
   color: string;
   examMarks?: ExamMarks;
+  notes?: string;
   createdAt: string;
 }
 

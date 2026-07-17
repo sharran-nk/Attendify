@@ -1,11 +1,12 @@
 import { motion } from 'framer-motion';
-import { Check, X, Clock, Plus } from 'lucide-react';
+import { Check, X, Clock, Plus, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { format } from 'date-fns';
+import { calculateMissableClasses } from '@/utils/attendance';
 import { useNavigate } from 'react-router-dom';
 
 export function TodayClasses() {
-  const { subjects, attendance } = useApp();
+  const { subjects, attendance, settings } = useApp();
   const navigate = useNavigate();
   
   const today = format(new Date(), 'yyyy-MM-dd');
@@ -76,6 +77,26 @@ export function TodayClasses() {
                     {subject.instructor}
                   </p>
                 )}
+                {(() => {
+                  const missable = calculateMissableClasses(
+                    subject.attendedClasses,
+                    subject.totalClasses,
+                    settings.attendanceWarningThreshold
+                  );
+                  return (
+                    <div className="flex items-center gap-1 mt-1 text-[10px] font-medium">
+                      {missable > 0 ? (
+                        <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                          <ShieldCheck className="w-3 h-3" /> Safe to skip: {missable}
+                        </span>
+                      ) : (
+                        <span className="text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                          <ShieldAlert className="w-3 h-3" /> Cannot skip
+                        </span>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
               <div className="flex items-center gap-2">
                 {subjectAttendance ? (

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, CheckCircle, Circle, Calendar, Trash2 } from 'lucide-react';
+import { Plus, CheckCircle, Circle, Calendar, Trash2, ExternalLink } from 'lucide-react';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { useApp } from '@/contexts/AppContext';
 import { format, parseISO, isToday, isPast, isTomorrow } from 'date-fns';
@@ -69,6 +69,22 @@ export default function Tasks() {
     if (isTomorrow(date)) return 'Tomorrow';
     if (isPast(date)) return 'Overdue';
     return format(date, 'MMM d');
+  };
+
+  const getGoogleCalendarUrl = (task: typeof tasks[0], subjectName?: string) => {
+    const baseUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE';
+    const text = encodeURIComponent(`Task: ${task.title} ${subjectName ? `(${subjectName})` : ''}`);
+    const details = task.description ? encodeURIComponent(task.description) : '';
+    
+    const dateStr = task.dueDate.replace(/-/g, '');
+    let dates = `${dateStr}/${dateStr}`;
+    
+    if (task.dueTime) {
+       const timeStr = task.dueTime.replace(':', '') + '00';
+       dates = `${dateStr}T${timeStr}/${dateStr}T${timeStr}`; 
+    }
+    
+    return `${baseUrl}&text=${text}&details=${details}&dates=${dates}`;
   };
 
   const filteredTasks = tasks
@@ -201,12 +217,21 @@ export default function Tasks() {
                         </div>
                       </div>
 
-                      <button
-                        onClick={() => deleteTask(task.id)}
-                        className="p-2 rounded-lg hover:bg-muted transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4 text-muted-foreground" />
-                      </button>
+                      <div className="flex flex-col items-end gap-2">
+                        <button
+                          onClick={() => window.open(getGoogleCalendarUrl(task, subject?.name), '_blank')}
+                          className="p-2 rounded-lg hover:bg-muted transition-colors text-blue-500 hover:text-blue-600"
+                          title="Add to Google Calendar"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => deleteTask(task.id)}
+                          className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   </motion.div>
                 );

@@ -20,6 +20,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { calculateMissableClasses } from '@/utils/attendance';
 
 const subjectColors = [
@@ -76,6 +77,10 @@ export default function Subjects() {
         }
       });
     }
+  };
+
+  const handleNoteChange = (subjectId: string, notes: string) => {
+    updateSubject(subjectId, { notes });
   };
 
   const handleFileUpload = async (subjectId: string, file: File) => {
@@ -370,6 +375,18 @@ export default function Subjects() {
                                 ))
                               )}
                             </div>
+                          </div>
+
+                          {/* Subject Notes */}
+                          <div className="space-y-2.5 pt-2 border-t border-border/40">
+                            <h4 className="text-[13px] font-medium text-muted-foreground">Notes</h4>
+                            <Textarea
+                              placeholder="Add markdown notes, links, or quick reminders here..."
+                              value={subject.notes || ''}
+                              onChange={(e) => handleNoteChange(subject.id, e.target.value)}
+                              onClick={(e) => e.stopPropagation()}
+                              className="text-sm bg-muted/30 min-h-[80px]"
+                            />
                           </div>
 
                           {/* Exam Marks */}
