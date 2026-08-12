@@ -27,6 +27,7 @@ export interface AttendanceEntry {
   subjectId: string;
   date: string;
   status: 'present' | 'absent' | 'cancelled';
+  time?: string;
   notes?: string;
   createdAt: string;
 }

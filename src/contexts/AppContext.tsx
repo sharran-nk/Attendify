@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Subject, AttendanceEntry, Task, CoursePlan, AppSettings, TimetableSlot } from '@/types/attendance';
+import { format } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
 import { 
@@ -243,6 +244,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const newEntry: AttendanceEntry = {
       ...entry,
       id: newId,
+      time: entry.time || format(new Date(), 'hh:mm a'),
       createdAt: new Date().toISOString(),
     };
     

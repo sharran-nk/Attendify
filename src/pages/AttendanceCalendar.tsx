@@ -1,13 +1,16 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Check, X, Plus, Minus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, X, Plus, Minus, FileText } from 'lucide-react';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { useApp } from '@/contexts/AppContext';
 import { format, addDays, subDays, startOfWeek, isSameDay } from 'date-fns';
+import { ExportModal } from '@/components/attendance/ExportModal';
+import { Button } from '@/components/ui/button';
 
 export default function AttendanceCalendar() {
   const { subjects, attendance, addAttendance, deleteAttendance } = useApp();
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [isExportOpen, setIsExportOpen] = useState(false);
 
   const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
@@ -41,6 +44,17 @@ export default function AttendanceCalendar() {
     <PageContainer
       title="Attendance"
       subtitle={format(selectedDate, 'MMMM yyyy')}
+      rightAction={
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setIsExportOpen(true)}
+          className="rounded-xl flex items-center gap-1.5 h-9"
+        >
+          <FileText className="w-4 h-4" />
+          <span>Export Report</span>
+        </Button>
+      }
     >
       <div className="space-y-6">
         {/* Week Navigation */}
@@ -155,6 +169,26 @@ export default function AttendanceCalendar() {
                               <span className="text-border">•</span>
                               <span className="font-medium text-destructive">{absentCount} Absent</span>
                             </div>
+                            
+                            {/* Display marked times for multiple classes */}
+                            {entries.length > 0 && (
+                              <div className="flex flex-wrap gap-1.5 mt-2">
+                                {entries.map((entry) => (
+                                  <span 
+                                    key={entry.id} 
+                                    className={`inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-semibold border ${
+                                      entry.status === 'present'
+                                        ? 'bg-success/10 text-success border-success/20'
+                                        : entry.status === 'absent'
+                                        ? 'bg-destructive/10 text-destructive border-destructive/20'
+                                        : 'bg-muted text-muted-foreground border-border'
+                                    }`}
+                                  >
+                                    {entry.status === 'present' ? 'P' : 'A'}: {entry.time || 'N/A'}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -218,6 +252,10 @@ export default function AttendanceCalendar() {
           </AnimatePresence>
         </div>
       </div>
+      <ExportModal 
+        isOpen={isExportOpen} 
+        onClose={() => setIsExportOpen(false)} 
+      />
     </PageContainer >
   );
 }
