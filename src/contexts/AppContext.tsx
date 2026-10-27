@@ -271,7 +271,44 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const updateAttendance = async (id: string, updates: Partial<AttendanceEntry>) => {
     if (!user) return;
-    await updateDoc(doc(db, 'users', user.id, 'attendance', id), updates);
+    const oldEntry = attendance.find(a => a.id === id);
+    if (!oldEntry) return;
+
+    const batch = writeBatch(db);
+    batch.update(doc(db, 'users', user.id, 'attendance', id), updates);
+
+    // If status changed, adjust subject counts
+    if (updates.status && updates.status !== oldEntry.status) {
+      const subject = subjects.find(s => s.id === oldEntry.subjectId);
+      if (subject) {
+        const subjectRef = doc(db, 'users', user.id, 'subjects', oldEntry.subjectId);
+        let newTotal = subject.totalClasses;
+        let newAttended = subject.attendedClasses;
+
+        // Revert old status
+        if (oldEntry.status === 'present') {
+          newTotal = Math.max(0, newTotal - 1);
+          newAttended = Math.max(0, newAttended - 1);
+        } else if (oldEntry.status === 'absent') {
+          newTotal = Math.max(0, newTotal - 1);
+        }
+
+        // Apply new status
+        if (updates.status === 'present') {
+          newTotal += 1;
+          newAttended += 1;
+        } else if (updates.status === 'absent') {
+          newTotal += 1;
+        }
+
+        batch.update(subjectRef, {
+          totalClasses: newTotal,
+          attendedClasses: newAttended,
+        });
+      }
+    }
+
+    await batch.commit();
   };
 
   const deleteAttendance = async (id: string) => {

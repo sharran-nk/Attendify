@@ -1,5 +1,5 @@
 import { PageContainer } from '@/components/layout/PageContainer';
-import { QuickStats } from '@/components/dashboard/QuickStats';
+import { TodayClasses } from '@/components/dashboard/TodayClasses';
 import { AttendanceInsights } from '@/components/dashboard/AttendanceInsights';
 import { WeeklyTimetable } from '@/components/dashboard/WeeklyTimetable';
 import { OverallAttendance } from '@/components/dashboard/OverallAttendance';
@@ -73,8 +73,8 @@ export default function Dashboard() {
         {/* 1. WEEKLY TIMETABLE */}
         <WeeklyTimetable />
 
-        {/* 2. QUICK STATS CARDS */}
-        <QuickStats />
+        {/* 2. TODAY'S CLASSES (Replaced 4 stat cards) */}
+        <TodayClasses />
 
         {/* MAIN CONTENT GRID */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
