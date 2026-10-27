@@ -1,5 +1,4 @@
 import { PageContainer } from '@/components/layout/PageContainer';
-import { TodayClasses } from '@/components/dashboard/TodayClasses';
 import { AttendanceInsights } from '@/components/dashboard/AttendanceInsights';
 import { WeeklyTimetable } from '@/components/dashboard/WeeklyTimetable';
 import { OverallAttendance } from '@/components/dashboard/OverallAttendance';
@@ -70,25 +69,14 @@ export default function Dashboard() {
     >
       <div className="space-y-5 pb-8">
 
-        {/* 1. WEEKLY TIMETABLE */}
+        {/* 1. OVERALL ATTENDANCE SUMMARY AT THE TOP */}
+        <OverallAttendance />
+
+        {/* 2. WEEKLY TIMETABLE */}
         <WeeklyTimetable />
 
-        {/* 2. TODAY'S CLASSES (Replaced 4 stat cards) */}
-        <TodayClasses />
-
-        {/* MAIN CONTENT GRID */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
-          
-          {/* Left Column (Insights) */}
-          <div className="xl:col-span-2 space-y-5">
-            <AttendanceInsights />
-          </div>
-
-          {/* Right Column (Overall Attendance) */}
-          <div className="space-y-5">
-            <OverallAttendance />
-          </div>
-        </div>
+        {/* 3. ATTENDANCE INSIGHTS */}
+        <AttendanceInsights />
 
       </div>
     </PageContainer>
