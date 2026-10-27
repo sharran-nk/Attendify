@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useApp } from '@/contexts/AppContext';
 import { format } from 'date-fns';
-import { DayOfWeek, TimetableSlot } from '@/types/attendance';
+import { DayOfWeek, TimetableSlot, Subject } from '@/types/attendance';
 import { generateDefaultTimetable } from '@/lib/defaultTimetable';
 import { Check, X, Clock, Upload, Ban } from 'lucide-react';
 import {
@@ -48,6 +48,53 @@ function getTimeRangeString(startTime: string): { displayRange: string; startMin
   };
 }
 
+// Clean string for normalized comparison (lowercase, single spaces, stripped punctuation)
+function normalizeName(str: string): string {
+  return str.toLowerCase().replace(/[^a-z0-9]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Matches a timetable slot to an existing user Subject in the Attendance tab.
+ * 1. Exact subject ID match
+ * 2. Exact name match (normalized case and whitespace)
+ * 3. Exact acronym match (e.g., "Deep Learning" -> "dl")
+ * Returns undefined if no existing subject matches.
+ */
+function findMatchingSubject(slot: TimetableSlot, userSubjects: Subject[]): Subject | undefined {
+  if (!userSubjects || userSubjects.length === 0) return undefined;
+
+  // 1. Direct ID match
+  if (slot.subjectId) {
+    const byId = userSubjects.find(s => s.id === slot.subjectId);
+    if (byId) return byId;
+  }
+
+  if (!slot.subjectName) return undefined;
+  const slotNorm = normalizeName(slot.subjectName);
+  if (!slotNorm) return undefined;
+
+  // 2. Exact normalized name match
+  const byExactName = userSubjects.find(s => normalizeName(s.name) === slotNorm);
+  if (byExactName) return byExactName;
+
+  // 3. Normalized acronym match
+  const byAcronym = userSubjects.find(s => {
+    const subNorm = normalizeName(s.name);
+    // Acronym of user subject: e.g. "image processing" -> "ip"
+    const subAcronym = subNorm.split(' ').map(w => w[0]).join('');
+    // Acronym of slot subject: e.g. "adv crypto" -> "ac"
+    const slotAcronym = slotNorm.split(' ').map(w => w[0]).join('');
+
+    return (
+      (slotNorm.length <= 4 && subAcronym === slotNorm) ||
+      (subNorm.length <= 4 && slotAcronym === subNorm)
+    );
+  });
+  if (byAcronym) return byAcronym;
+
+  return undefined;
+}
+
 export function TodayClasses() {
   const { subjects, attendance, timetable, addAttendance, updateAttendance, deleteAttendance, settings } = useApp();
   const navigate = useNavigate();
@@ -64,8 +111,8 @@ export function TodayClasses() {
     return generateDefaultTimetable();
   }, [timetable]);
 
-  // Today's academic slots (exclude breaks/lunch)
-  const todaySlots = useMemo(() => {
+  // All non-break timetable slots scheduled for today (regardless of subject matching)
+  const allTodaySlots = useMemo(() => {
     return effectiveTimetable
       .filter(s => s.day === dayName && !s.isBreak && (s.subjectId || s.subjectName))
       .map(slot => {
@@ -77,6 +124,20 @@ export function TodayClasses() {
       })
       .sort((a, b) => a.startMin - b.startMin);
   }, [effectiveTimetable, dayName]);
+
+  // STRICT FILTER: Only display slots whose subject exists in the user's Attendance tab!
+  const todaySlots = useMemo(() => {
+    return allTodaySlots
+      .map(slot => {
+        const matchedSubject = findMatchingSubject(slot, subjects);
+        if (!matchedSubject) return null;
+        return {
+          ...slot,
+          matchedSubject,
+        };
+      })
+      .filter((slot): slot is (typeof allTodaySlots[0] & { matchedSubject: Subject }) => slot !== null);
+  }, [allTodaySlots, subjects]);
 
   // Current time in minutes from midnight
   const nowMinutes = todayDate.getHours() * 60 + todayDate.getMinutes();
@@ -166,50 +227,67 @@ export function TodayClasses() {
             <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3 text-slate-400">
               <Clock className="w-6 h-6" />
             </div>
-            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-              No classes scheduled today.
-            </p>
-            {hasNoTimetableConfigured ? (
-              <div className="mt-4">
-                <button
-                  onClick={() => {
-                    const timetableInput = document.querySelector('input[type="file"][accept*="image"]') as HTMLInputElement;
-                    if (timetableInput) timetableInput.click();
-                    else navigate('/subjects');
-                  }}
-                  className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all"
-                >
-                  <Upload className="w-3.5 h-3.5" />
-                  Upload Timetable
-                </button>
-              </div>
+            
+            {/* If timetable has classes today, but none match the user's Attendance subjects */}
+            {allTodaySlots.length > 0 ? (
+              <>
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  No classes found for your subjects today.
+                </p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 max-w-xs mx-auto">
+                  Today's timetable has classes, but they aren't in your Attendance tab yet.
+                </p>
+                <div className="mt-4">
+                  <button
+                    onClick={() => navigate('/subjects')}
+                    className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all"
+                  >
+                    Add Subjects to Attendance
+                  </button>
+                </div>
+              </>
             ) : (
-              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
-                Enjoy your free day or catch up on studies!
-              </p>
+              <>
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  No classes scheduled today.
+                </p>
+                {hasNoTimetableConfigured ? (
+                  <div className="mt-4">
+                    <button
+                      onClick={() => {
+                        const timetableInput = document.querySelector('input[type="file"][accept*="image"]') as HTMLInputElement;
+                        if (timetableInput) timetableInput.click();
+                        else navigate('/subjects');
+                      }}
+                      className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all"
+                    >
+                      <Upload className="w-3.5 h-3.5" />
+                      Upload Timetable
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                    Enjoy your free day or catch up on studies!
+                  </p>
+                )}
+              </>
             )}
           </div>
         ) : (
           todaySlots.map((slot, index) => {
-            // Find linked Subject by subjectId or matching name
-            const subject = subjects.find(
-              s => (slot.subjectId && s.id === slot.subjectId) ||
-                   (slot.subjectName && s.name.toLowerCase() === slot.subjectName.toLowerCase()) ||
-                   (slot.subjectName && s.name.toLowerCase().includes(slot.subjectName.toLowerCase())) ||
-                   (slot.subjectName && slot.subjectName.toLowerCase().includes(s.name.toLowerCase()))
-            );
-
-            const subjectDisplayName = subject?.name || slot.subjectName || "Subject";
-            const subjectColor = subject?.color || "#4f46e5";
+            const subject = slot.matchedSubject;
+            const subjectDisplayName = subject.name;
+            const subjectColor = subject.color || "#4f46e5";
             const slotTimeFormatted = formatMinutesTo12h(slot.startMin);
 
             // Find attendance record for this slot
             const record = attendance.find(
               a => a.date === todayDateStr &&
+                   a.subjectId === subject.id &&
                    (
-                     (subject && a.subjectId === subject.id && a.notes === `slot:${slot.id}`) ||
-                     (subject && a.subjectId === subject.id && a.time === slotTimeFormatted) ||
-                     (subject && a.subjectId === subject.id && !a.notes)
+                     a.notes === `slot:${slot.id}` ||
+                     a.time === slotTimeFormatted ||
+                     !a.notes
                    )
             );
 
@@ -304,10 +382,7 @@ export function TodayClasses() {
                     <DropdownMenuContent align="end" className="w-40">
                       <DropdownMenuItem
                         className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-medium cursor-pointer"
-                        onClick={() => {
-                          if (subject) handleSetStatus(slot, subject.id, 'present');
-                          else toast.error("Please add this subject in Subjects first to record attendance");
-                        }}
+                        onClick={() => handleSetStatus(slot, subject.id, 'present')}
                       >
                         <Check className="w-4 h-4" />
                         Mark Present
@@ -315,10 +390,7 @@ export function TodayClasses() {
 
                       <DropdownMenuItem
                         className="flex items-center gap-2 text-rose-600 dark:text-rose-400 font-medium cursor-pointer"
-                        onClick={() => {
-                          if (subject) handleSetStatus(slot, subject.id, 'absent');
-                          else toast.error("Please add this subject in Subjects first to record attendance");
-                        }}
+                        onClick={() => handleSetStatus(slot, subject.id, 'absent')}
                       >
                         <X className="w-4 h-4" />
                         Mark Absent
@@ -326,10 +398,7 @@ export function TodayClasses() {
 
                       <DropdownMenuItem
                         className="flex items-center gap-2 text-slate-600 dark:text-slate-400 font-medium cursor-pointer"
-                        onClick={() => {
-                          if (subject) handleSetStatus(slot, subject.id, 'cancelled');
-                          else toast.error("Please add this subject in Subjects first to record attendance");
-                        }}
+                        onClick={() => handleSetStatus(slot, subject.id, 'cancelled')}
                       >
                         <Ban className="w-4 h-4" />
                         Mark Cancelled
@@ -338,9 +407,7 @@ export function TodayClasses() {
                       {record && (
                         <DropdownMenuItem
                           className="flex items-center gap-2 text-slate-500 font-medium cursor-pointer border-t mt-1"
-                          onClick={() => {
-                            if (subject) handleSetStatus(slot, subject.id, 'unmarked');
-                          }}
+                          onClick={() => handleSetStatus(slot, subject.id, 'unmarked')}
                         >
                           Reset to Unmarked
                         </DropdownMenuItem>
