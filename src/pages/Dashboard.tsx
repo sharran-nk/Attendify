@@ -1,8 +1,8 @@
 import { PageContainer } from '@/components/layout/PageContainer';
 import { QuickStats } from '@/components/dashboard/QuickStats';
-import { TodayClasses } from '@/components/dashboard/TodayClasses';
 import { AttendanceInsights } from '@/components/dashboard/AttendanceInsights';
 import { WeeklyTimetable } from '@/components/dashboard/WeeklyTimetable';
+import { OverallAttendance } from '@/components/dashboard/OverallAttendance';
 import { ModeToggle } from '@/components/mode-toggle';
 import { ShareButton } from '@/components/share-button';
 import { format } from 'date-fns';
@@ -84,11 +84,9 @@ export default function Dashboard() {
             <AttendanceInsights />
           </div>
 
-          {/* Right Column (Tasks & Schedule) */}
+          {/* Right Column (Overall Attendance) */}
           <div className="space-y-5">
-            <div className="ios-card p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm">
-              <TodayClasses />
-            </div>
+            <OverallAttendance />
           </div>
         </div>
 
