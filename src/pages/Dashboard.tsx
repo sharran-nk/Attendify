@@ -4,6 +4,7 @@ import { TodayClasses } from '@/components/dashboard/TodayClasses';
 import { AttendanceInsights } from '@/components/dashboard/AttendanceInsights';
 import { WeeklyTimetable } from '@/components/dashboard/WeeklyTimetable';
 import { ModeToggle } from '@/components/mode-toggle';
+import { ShareButton } from '@/components/share-button';
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
@@ -52,6 +53,7 @@ export default function Dashboard() {
       subtitle={todayStr.toUpperCase()}
       rightAction={
         <div className="flex items-center gap-3">
+          <ShareButton />
           <ModeToggle />
           {!isInstalled ? (
             <motion.button
