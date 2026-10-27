@@ -40,7 +40,7 @@ export function WeeklyTimetable() {
           <ImageIcon className="w-6 h-6" />
         </div>
         <div>
-          <h2 className="font-bold text-base">Weekly Timetable</h2>
+          <h2 className="font-bold text-base">Timetable</h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">
             {settings.timetableImage ? "Tap to view schedule" : "No image uploaded"}
           </p>

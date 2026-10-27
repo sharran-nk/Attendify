@@ -69,11 +69,11 @@ export default function Dashboard() {
     >
       <div className="space-y-5 pb-8">
 
-        {/* 1. OVERALL ATTENDANCE SUMMARY AT THE TOP */}
-        <OverallAttendance />
-
-        {/* 2. WEEKLY TIMETABLE */}
+        {/* 1. TIMETABLE */}
         <WeeklyTimetable />
+
+        {/* 2. OVERALL ATTENDANCE SUMMARY */}
+        <OverallAttendance />
 
         {/* 3. ATTENDANCE INSIGHTS */}
         <AttendanceInsights />
