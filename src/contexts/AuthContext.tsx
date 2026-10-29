@@ -57,22 +57,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     picture: firebaseUser.photoURL || `https://api.dicebear.com/7.x/adventurer/svg?seed=${firebaseUser.uid}`,
                 };
 
-                try {
-                    const userRef = doc(db, 'users', firebaseUser.uid);
-                    const userSnap = await getDoc(userRef);
-                    if (userSnap.exists()) {
-                        const data = userSnap.data();
-                        userData.pinHash = data.pinHash;
-                    } else {
-                        await setDoc(userRef, userData, { merge: true });
+                // Immediately set user so AppContext listeners can load data without waiting for network
+                setUser(userData);
+                setIsLoading(false);
+
+                // Fetch/update user document asynchronously in the background
+                (async () => {
+                    try {
+                        const userRef = doc(db, 'users', firebaseUser.uid);
+                        const userSnap = await getDoc(userRef);
+                        if (userSnap.exists()) {
+                            const data = userSnap.data();
+                            setUser(prev => prev ? { ...prev, pinHash: data.pinHash } : prev);
+                        } else {
+                            await setDoc(userRef, userData, { merge: true });
+                        }
+                    } catch (error) {
+                        console.error("Error fetching/creating user document", error);
                     }
-                    setUser(userData);
-                } catch (error) {
-                    console.error("Error fetching/creating user document", error);
-                    setUser(userData); // Fallback
-                } finally {
-                    setIsLoading(false);
-                }
+                })();
             } else {
                 setUser(null);
                 setIsLoading(false);

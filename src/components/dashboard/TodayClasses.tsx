@@ -77,17 +77,29 @@ function findMatchingSubject(slot: TimetableSlot, userSubjects: Subject[]): Subj
   const byExactName = userSubjects.find(s => normalizeName(s.name) === slotNorm);
   if (byExactName) return byExactName;
 
-  // 3. Normalized acronym match
+  // 3. Word boundary or contains match (e.g., "IP Lab" -> "IP", "Image Processing (IP)" -> "IP")
+  const byWordBoundary = userSubjects.find(s => {
+    const subNorm = normalizeName(s.name);
+    if (subNorm === slotNorm) return true;
+    const subWords = subNorm.split(' ');
+    const slotWords = slotNorm.split(' ');
+    // Single word exact token match (e.g. "IP" in ["digital", "image", "processing", "ip"])
+    if (subWords.includes(slotNorm) || slotWords.includes(subNorm)) return true;
+    return false;
+  });
+  if (byWordBoundary) return byWordBoundary;
+
+  // 4. Normalized acronym match (e.g., "Image Processing" -> "IP", "Deep Learning" -> "DL")
   const byAcronym = userSubjects.find(s => {
     const subNorm = normalizeName(s.name);
-    // Acronym of user subject: e.g. "image processing" -> "ip"
+    // First letter of each word
     const subAcronym = subNorm.split(' ').map(w => w[0]).join('');
-    // Acronym of slot subject: e.g. "adv crypto" -> "ac"
     const slotAcronym = slotNorm.split(' ').map(w => w[0]).join('');
 
     return (
-      (slotNorm.length <= 4 && subAcronym === slotNorm) ||
-      (subNorm.length <= 4 && slotAcronym === subNorm)
+      (slotNorm.length >= 2 && subAcronym === slotNorm) ||
+      (subNorm.length >= 2 && slotAcronym === subNorm) ||
+      (subAcronym && slotAcronym && subAcronym === slotAcronym)
     );
   });
   if (byAcronym) return byAcronym;
