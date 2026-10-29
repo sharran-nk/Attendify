@@ -42,14 +42,14 @@ export default function Dashboard() {
   return (
     <PageContainer
       title={
-        <span className="flex items-center gap-1.5">
+        <span className="flex items-center gap-1.5 font-semibold text-foreground">
           {greeting()},
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500 dark:from-blue-400 dark:to-purple-400">
+          <span className="text-primary font-bold">
             {getFirstName()}
           </span>
         </span>
       }
-      subtitle={todayStr.toUpperCase()}
+      subtitle={todayStr}
       rightAction={
         <div className="flex items-center gap-3">
           <ShareButton />

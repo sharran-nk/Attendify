@@ -33,8 +33,10 @@ export function TabBar() {
             <motion.button
               key={tab.id}
               onClick={() => navigate(tab.path)}
-              className="relative flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-colors"
-              whileTap={{ scale: 0.9 }}
+              aria-label={tab.label}
+              aria-current={isActive ? 'page' : undefined}
+              className="relative flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+              whileTap={{ scale: 0.95 }}
             >
               {isActive && (
                 <motion.div

@@ -1,37 +1,15 @@
 import { motion } from 'framer-motion';
 import { useApp } from '@/contexts/AppContext';
 import { useNavigate } from 'react-router-dom';
+import { calculateOverallMetrics } from '@/utils/attendance';
 
 export function OverallAttendance() {
-  const { subjects, attendance } = useApp();
+  const { subjects, attendance, settings } = useApp();
   const navigate = useNavigate();
 
-  // If there are attendance logs, we can count precisely by status (excluding cancelled)
-  // Also cross-reference subject summary values in case user added subjects with initial total/attended counts
-  let attended = 0;
-  let absent = 0;
-
-  if (attendance && attendance.length > 0) {
-    attendance.forEach(entry => {
-      if (entry.status === 'present') {
-        attended++;
-      } else if (entry.status === 'absent') {
-        absent++;
-      }
-      // 'cancelled' is excluded as required
-    });
-  } else if (subjects && subjects.length > 0) {
-    // Fallback to subjects' aggregate counters if detailed logs aren't populated yet
-    subjects.forEach(s => {
-      const att = Number(s.attendedClasses) || 0;
-      const tot = Number(s.totalClasses) || 0;
-      attended += att;
-      absent += Math.max(0, tot - att);
-    });
-  }
-
-  const totalClasses = attended + absent;
-  const percentage = totalClasses > 0 ? Math.round((attended / totalClasses) * 100) : 0;
+  const { attended, absent, totalClasses, percentage } = calculateOverallMetrics(subjects, attendance);
+  const roundedPercentage = Math.round(percentage);
+  const isHealthy = roundedPercentage >= (settings.attendanceWarningThreshold || 75);
 
   // SVG circular gauge calculations
   const size = 120;
@@ -65,13 +43,6 @@ export function OverallAttendance() {
             height={size}
             className="transform -rotate-90 overflow-visible"
           >
-            <defs>
-              <linearGradient id="attendanceGreenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#10b981" />
-                <stop offset="100%" stopColor="#059669" />
-              </linearGradient>
-            </defs>
-
             {/* Background ring */}
             <circle
               cx={center}
@@ -88,12 +59,12 @@ export function OverallAttendance() {
               cx={center}
               cy={center}
               r={radius}
-              stroke="url(#attendanceGreenGrad)"
+              stroke={isHealthy ? '#10b981' : '#f43f5e'}
               strokeWidth={strokeWidth}
               strokeDasharray={circumference}
               initial={{ strokeDashoffset: circumference }}
               animate={{ strokeDashoffset }}
-              transition={{ duration: 1, ease: 'easeOut' }}
+              transition={{ duration: 0.8, ease: 'easeOut' }}
               strokeLinecap="round"
               fill="transparent"
             />
@@ -101,8 +72,10 @@ export function OverallAttendance() {
 
           {/* Centered Percentage */}
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <span className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-              {percentage}%
+            <span className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${
+              totalClasses === 0 ? 'text-slate-400' : isHealthy ? 'text-slate-900 dark:text-white' : 'text-rose-600 dark:text-rose-400'
+            }`}>
+              {roundedPercentage}%
             </span>
           </div>
         </div>

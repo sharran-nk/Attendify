@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useApp } from '@/contexts/AppContext';
-import { calculateMissableClasses } from '@/utils/attendance';
+import { calculateMissableClasses, calculateConsecutiveClassesNeeded } from '@/utils/attendance';
 import { AlertCircle, CheckCircle2, Info, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -39,19 +39,9 @@ export function AttendanceInsights() {
             const pct = subject.totalClasses > 0 ? (subject.attendedClasses / subject.totalClasses) * 100 : 100;
             const isLow = pct < settings.attendanceWarningThreshold;
             const missable = calculateMissableClasses(subject.attendedClasses, subject.totalClasses, settings.attendanceWarningThreshold);
-            
-            let classesNeeded = 0;
-            if (isLow) {
-              // How many consecutive classes needed to reach threshold?
-              let tempAttended = subject.attendedClasses;
-              let tempTotal = subject.totalClasses;
-              while ((tempAttended / tempTotal) * 100 < settings.attendanceWarningThreshold) {
-                tempAttended++;
-                tempTotal++;
-                classesNeeded++;
-                if (classesNeeded > 100) break; // sanity limit
-              }
-            }
+            const classesNeeded = isLow
+              ? calculateConsecutiveClassesNeeded(subject.attendedClasses, subject.totalClasses, settings.attendanceWarningThreshold)
+              : 0;
 
             return (
               <motion.div

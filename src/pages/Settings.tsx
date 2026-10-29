@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Moon, Sun, Percent, Info, LogOut, Cloud, RefreshCw, Clock, Sparkles } from 'lucide-react';
+import { Moon, Sun, Percent, Info, LogOut, Cloud, RefreshCw, Clock } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { useApp } from '@/contexts/AppContext';
@@ -8,9 +8,10 @@ import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { calculateOverallMetrics } from '@/utils/attendance';
 
 export default function Settings() {
-  const { settings, updateSettings, subjects, isSyncing } = useApp();
+  const { settings, updateSettings, subjects, attendance, isSyncing } = useApp();
   const { logout, user } = useAuth();
   const { setTheme, theme } = useTheme();
 
@@ -24,8 +25,7 @@ export default function Settings() {
     }
   };
 
-  const totalAttended = subjects.reduce((sum, s) => sum + s.attendedClasses, 0);
-  const totalClasses = subjects.reduce((sum, s) => sum + s.totalClasses, 0);
+  const { attended: totalAttended, totalClasses, percentage } = calculateOverallMetrics(subjects, attendance);
 
   return (
     <PageContainer
@@ -216,15 +216,12 @@ export default function Settings() {
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Overall Attendance</span>
               <span className={`font-semibold ${totalClasses > 0
-                ? (totalAttended / totalClasses) * 100 >= settings.attendanceWarningThreshold
+                ? percentage >= settings.attendanceWarningThreshold
                   ? 'text-success'
                   : 'text-destructive'
                 : ''
                 }`}>
-                {totalClasses > 0
-                  ? `${Math.round((totalAttended / totalClasses) * 100)}%`
-                  : 'N/A'
-                }
+                {totalClasses > 0 ? `${Math.round(percentage)}%` : 'N/A'}
               </span>
             </div>
           </motion.div>
