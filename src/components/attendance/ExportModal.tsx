@@ -44,8 +44,10 @@ export function ExportModal({ isOpen, onClose }: ExportModalProps) {
           start = startOfMonth(new Date());
           end = endOfMonth(new Date());
         } else if (dateRangeType === 'custom') {
-          start = new Date(customStartDate);
-          end = new Date(customEndDate);
+          const [sY, sM, sD] = customStartDate.split('-').map(Number);
+          const [eY, eM, eD] = customEndDate.split('-').map(Number);
+          start = new Date(sY, sM - 1, sD, 0, 0, 0, 0);
+          end = new Date(eY, eM - 1, eD, 23, 59, 59, 999);
           
           if (isNaN(start.getTime()) || isNaN(end.getTime())) {
             toast.error('Invalid custom date range selected.');
