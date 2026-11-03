@@ -51,20 +51,6 @@
 │  attendance      │  lectures        │  tracking        │  reports        │
 └──────────────────┴──────────────────┴──────────────────┴─────────────────┘
 ```
-
----
-
-## 📸 Application Showcase
-
-<div align="center">
-
-| 📱 Mobile First (PWA) | 💻 Desktop Dashboard |
-| :---: | :---: |
-| <img src="public/attendify-promo.png" width="340" alt="Mobile View" style="border-radius: 8px;" /> | <img src="public/attendify-promo.png" width="460" alt="Desktop View" style="border-radius: 8px;" /> |
-| *Fluid touch gestures, fast PWA install* | *Wide-screen insights, timetable & subject matrix* |
-
-</div>
-
 ---
 
 ## 🚀 Key Feature Modules
