@@ -1,269 +1,249 @@
 <div align="center">
 
-# Attendify
+  <img src="public/pwa-192x192.png" alt="Attendify Logo" width="80" height="80" style="border-radius: 20px; margin-bottom: 8px;" />
 
-**Attendance tracker and companion app for college students, built as an installable PWA.**
+  # Attendify
 
-[**Live app →**](https://attendify-d4a2a.web.app)
+  ### 🎓 Intelligent Attendance & Campus Companion for Students
 
-![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-5-646CFF?logo=vite&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?logo=tailwindcss&logoColor=white)
-![Firebase](https://img.shields.io/badge/Firebase-FFCA28?logo=firebase&logoColor=black)
-![PWA](https://img.shields.io/badge/PWA-installable-5A0FC8?logo=pwa&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
-[![CI/CD](https://github.com/sharran-nk/Attendify/actions/workflows/attendify-ci-cd.yml/badge.svg)](https://github.com/sharran-nk/Attendify/actions/workflows/attendify-ci-cd.yml)
+  <p align="center">
+    A minimal, privacy-focused Progressive Web App designed to track lectures, calculate safe bunks, manage syllabus notes, and monitor academic attendance targets with zero friction.
+  </p>
+
+  <p align="center">
+    <a href="https://attendify-d4a2a.web.app" target="_blank">
+      <img src="https://img.shields.io/badge/🌐_Launch_App-attendify--d4a2a.web.app-007AFF?style=for-the-badge&logoColor=white" alt="Live App" />
+    </a>
+  </p>
+
+  <!-- Status & Tech Badges -->
+  <p align="center">
+    <img src="https://img.shields.io/badge/React_18-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React 18" />
+    <img src="https://img.shields.io/badge/TypeScript_5-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/Vite_5-646CFF?style=flat-square&logo=vite&logoColor=white" alt="Vite" />
+    <img src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
+    <img src="https://img.shields.io/badge/Firebase_Firestore-FFCA28?style=flat-square&logo=firebase&logoColor=black" alt="Firebase" />
+    <img src="https://img.shields.io/badge/PWA_Ready-5A0FC8?style=flat-square&logo=pwa&logoColor=white" alt="PWA" />
+    <img src="https://img.shields.io/badge/Docker_Ready-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker" />
+    <a href="https://github.com/sharran-nk/Attendify/actions/workflows/attendify-ci-cd.yml">
+      <img src="https://img.shields.io/github/actions/workflow/status/sharran-nk/Attendify/attendify-ci-cd.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white&label=CI%2FCD" alt="Build Status" />
+    </a>
+  </p>
+
+  <br />
+
+  <img src="public/attendify-promo.png" alt="Attendify Banner Preview" width="85%" style="border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);" />
 
 </div>
 
 ---
 
-## Screenshots
+## ⚡ Highlights at a Glance
 
-| Mobile | Desktop |
-| :----: | :-----: |
-| <!-- TODO: add mobile screenshot --> | <!-- TODO: add desktop screenshot --> |
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│                             ATTENDIFY HUB                                │
+├──────────────────┬──────────────────┬──────────────────┬─────────────────┤
+│  🎯 75% Bunk     │  📅 Timetable    │  📚 Subject Hub  │  📊 Instant PDF │
+│     Calculator   │     Schedule     │     & PDF Notes  │     Export      │
+│  Instant math to │  Matched with    │  CT1, CT2, &     │  Full monthly & │
+│  reach or hold   │  active daily    │  semester marks  │  weekly audit   │
+│  attendance      │  lectures        │  tracking        │  reports        │
+└──────────────────┴──────────────────┴──────────────────┴─────────────────┘
+```
 
-## Features
+---
 
-### Attendance
-- **Dashboard** with a greeting, overall attendance (total, attended, missed, %), and today's classes from your timetable.
-- Mark each class **Present**, **Absent** or **Cancelled**. Cancelled classes don't count toward the percentage.
-- **Predictions** (simple deterministic maths):
-  - "Attend the next *N* classes to reach 75%"
-  - "Safe to miss *N* classes"
-  - What your percentage becomes if you attend or miss the next class
-  - Target threshold configurable from **50–90%** (default **75%**)
-- **Attendance calendar**: week view; add or remove present/absent entries for any day, with support for several classes per day.
+## 📸 Application Showcase
 
-### Academics
-- **Subjects**: per-subject attendance, instructor, credits, colour, notes, PDF course materials, and exam marks (CT1, CT2, Project, End Sem) with totals.
-- **Timetable**: weekly slot-based timetable, plus an uploaded timetable image with a fullscreen viewer.
-- **Tasks**: assignments with due dates/times, filters (all / pending / completed), and an "Add to Google Calendar" link.
-- **Reports**: export attendance to PDF (jsPDF + jspdf-autotable).
+<div align="center">
 
-### Account & Sync
-- **Sign-in with email + PIN** via Firebase Authentication. PINs are stored as SHA-256 hashes.
-- **Forgot PIN** flow through EmailJS.
-- **Real-time cloud sync** with Cloud Firestore, plus a one-time migration from old localStorage data.
+| 📱 Mobile First (PWA) | 💻 Desktop Dashboard |
+| :---: | :---: |
+| <img src="public/attendify-promo.png" width="340" alt="Mobile View" style="border-radius: 8px;" /> | <img src="public/attendify-promo.png" width="460" alt="Desktop View" style="border-radius: 8px;" /> |
+| *Fluid touch gestures, fast PWA install* | *Wide-screen insights, timetable & subject matrix* |
 
-### App experience
-- **Installable PWA** with an in-app install prompt (also covers iOS).
-- **Daily attendance reminder** via browser notifications (time is configurable).
-- **Light / Dark / System** themes.
-- **Share button**: native share sheet on mobile; on desktop it copies a message and downloads an image.
+</div>
 
-## Tech Stack
+---
 
-| Area | Technology |
-| --- | --- |
-| Framework | React 18, TypeScript, Vite 5 |
-| Styling & UI | Tailwind CSS, shadcn/ui (Radix UI), Framer Motion, Lucide icons, Sonner |
-| Backend services | Firebase (Auth, Firestore, Hosting) |
-| Utilities | date-fns, jsPDF, EmailJS |
-| PWA | vite-plugin-pwa |
-| Deployment | Docker + Nginx, GitHub Actions |
+## 🚀 Key Feature Modules
 
-## Getting Started
+### 1. 🎯 Smart Attendance & Prediction Engine
+* **Instant Dashboard Statistics**: Clear visual split of total, attended, absent, and percentage scores.
+* **Non-Punitive Cancelled States**: Classes flagged as "Cancelled" are gracefully excluded from percentages.
+* **Deterministic Safe-to-Bunk Math**:
+  * Exact calculation of how many consecutive classes you can safely miss without breaching your cutoff.
+  * Exact classes required to restore attendance if you fall below the configured target (50% – 90%, defaults to 75%).
+* **Interactive Week Calendar**: Log multiple sessions in a single day, backfill previous weeks, and review attendance logs.
 
-**Requirements:** Node.js 18+ (CI uses Node 22).
+### 2. 📚 Subject & Academic Management
+* **Color-Coded Badges**: Customize each subject with distinct accents for quick recognition.
+* **Course Materials Hub**: In-app PDF upload and previewer for syllabus copies and lecture slide notes.
+* **Internal Marks Breakdown**: Log and tally continuous assessments (CT1, CT2), mini-projects, and end-semester scores.
 
+### 3. 📅 Schedule & Tasks
+* **Timetable Mapping**: Synchronizes configured periods with real daily timeslots.
+* **Photo Timetable View**: Upload your physical classroom timetable sheet and inspect it anytime in full-screen.
+* **Academic Tasks**: Organize to-do items by deadline, priority, and one-click export to Google Calendar.
+
+### 4. 🔒 Authentication & Cloud Sync
+* **Email + Hashed PIN**: Fast, passwordless login using SHA-256 PIN security.
+* **OTP Reset**: Seamless PIN retrieval flow delivered via EmailJS.
+* **Real-Time Cloud Synchronization**: Firestore backed, instant live update across multiple devices.
+* **PWA & Offline Readiness**: Service worker precaching, custom add-to-homescreen triggers, and configurable morning lecture alerts.
+
+---
+
+## 🛠️ Architecture & Tech Stack
+
+```mermaid
+graph TD
+    Client["React 18 + Vite PWA<br/>(Tailwind CSS + shadcn/ui)"]
+    Auth["Firebase Auth<br/>(Email + Hashed PIN)"]
+    DB[("Cloud Firestore<br/>(Realtime Sync)")]
+    EmailSvc["EmailJS<br/>(OTP Password Reset)"]
+    DocSvc["jsPDF Engine<br/>(Reports & Audit Export)"]
+
+    Client -->|User Authentication| Auth
+    Client -->|Live State Listeners| DB
+    Client -->|Forgot PIN Flow| EmailSvc
+    Client -->|Client-side Generation| DocSvc
+```
+
+| Domain | Tools & Technologies |
+| :--- | :--- |
+| **Frontend Core** | React 18, TypeScript, Vite 5, React Router v6 |
+| **Styling & Motion** | Tailwind CSS, shadcn/ui (Radix Primitives), Framer Motion, Lucide Icons |
+| **Cloud & Storage** | Firebase Authentication, Cloud Firestore |
+| **Date & Documents** | `date-fns`, `jspdf`, `jspdf-autotable` |
+| **Notifications & Mail**| Native Web Notification API, EmailJS SDK, Sonner Toasts |
+| **DevOps & Container** | Docker (Multi-stage Node 22 + Nginx Alpine), GitHub Actions CI/CD |
+
+---
+
+## 📐 How Attendance Calculations Work
+
+All calculations are **100% deterministic arithmetic** — transparent, predictable, and free from estimation algorithms.
+
+Let:
+- $a$ = Classes Attended
+- $b$ = Classes Absent
+- $T$ = Attendance Threshold (e.g., $75\%$)
+- *(Cancelled lectures are automatically omitted from both $a$ and $b$)*
+
+```
+┌─────────────────────────────────┬────────────────────────────────────────────────────────┐
+│ Metric                          │ Mathematical Formula                                   │
+├─────────────────────────────────┼────────────────────────────────────────────────────────┤
+│ Current Attendance (%)          │  Percentage = (a / (a + b)) × 100                      │
+├─────────────────────────────────┼────────────────────────────────────────────────────────┤
+│ Classes Needed to Reach Target  │  n = ⌈ (T(a + b) - 100a) / (100 - T) ⌉                 │
+│                                 │  (returns 0 if current % >= T)                         │
+├─────────────────────────────────┼────────────────────────────────────────────────────────┤
+│ Safe Classes to Bunk            │  m = ⌊ (100a - T(a + b)) / T ⌋                         │
+│                                 │  (returns 0 if current % < T)                          │
+├─────────────────────────────────┼────────────────────────────────────────────────────────┤
+│ If You Attend Next Class        │  Percentage = ((a + 1) / (a + b + 1)) × 100            │
+├─────────────────────────────────┼────────────────────────────────────────────────────────┤
+│ If You Miss Next Class          │  Percentage = (a / (a + b + 1)) × 100                  │
+└─────────────────────────────────┴────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🗂️ Project Directory Layout
+
+```
+attendify/
+├── .github/workflows/        # Automated CI/CD (Build, Docker Hub Push, Firebase Deploy)
+├── public/                   # PWA Manifest, App Icons & Brand Assets
+├── src/
+│   ├── components/
+│   │   ├── attendance/       # PDF Report Generation & Export Modal
+│   │   ├── auth/             # Login, ProtectedRoute & PIN Recovery Dialog
+│   │   ├── dashboard/        # Overall Attendance Ring, Timetable & Today's Classes
+│   │   ├── layout/           # PageContainer & iOS Glass TabBar
+│   │   ├── pwa/              # Native Web Install Prompts
+│   │   └── ui/               # shadcn / Radix UI design tokens
+│   ├── contexts/             # AppContext (Firestore Sync) & AuthContext
+│   ├── hooks/                # PWA Install & Morning Reminder Hooks
+│   ├── lib/                  # Firebase Client & Timetable Generators
+│   ├── pages/                # Dashboard, Subjects, Calendar, Tasks, Settings, Login
+│   ├── types/                # Domain Types (attendance.ts, user.ts)
+│   └── utils/                # Calculation Formulas & jsPDF Document Layouts
+├── Dockerfile                # Multi-stage production container
+├── nginx.conf                # High-performance SPA routing & caching
+├── firebase.json             # Firebase Hosting rewrites & rules
+└── firestore.rules           # Security rules for Firestore collections
+```
+
+---
+
+## ⚙️ Getting Started & Local Development
+
+### 1. Clone & Install Dependencies
 ```bash
-# 1. Clone
 git clone https://github.com/sharran-nk/Attendify.git
 cd Attendify
-
-# 2. Install
 npm install
+```
 
-# 3. Configure environment (see below)
-touch .env
+### 2. Environment Variables Configuration
+Create a `.env` file in the root directory:
+```env
+# Firebase Configuration
+VITE_FIREBASE_API_KEY=your_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
 
-# 4. Run
+# EmailJS Configuration (for PIN Recovery)
+VITE_EMAILJS_SERVICE_ID=your_service_id
+VITE_EMAILJS_TEMPLATE_ID=your_template_id
+VITE_EMAILJS_PUBLIC_KEY=your_public_key
+```
+
+### 3. Launch Development Server
+```bash
 npm run dev
 ```
+Visit `http://localhost:5173` to view the app.
 
-### Environment variables
+---
 
-Create a `.env` file in the project root. **Never commit it.**
+## 📦 Containerization & Deployment
 
-```env
-VITE_FIREBASE_API_KEY=
-VITE_FIREBASE_AUTH_DOMAIN=
-VITE_FIREBASE_PROJECT_ID=
-VITE_FIREBASE_STORAGE_BUCKET=
-VITE_FIREBASE_MESSAGING_SENDER_ID=
-VITE_FIREBASE_APP_ID=
-VITE_EMAILJS_SERVICE_ID=
-VITE_EMAILJS_TEMPLATE_ID=
-VITE_EMAILJS_PUBLIC_KEY=
-```
-
-### Scripts
-
-| Command | Description |
-| --- | --- |
-| `npm run dev` | Start the dev server |
-| `npm run build` | Production build |
-| `npm run preview` | Preview the production build locally |
-| `npm run lint` | Run the linter |
-
-## Firebase Setup
-
-1. Create a project in the [Firebase Console](https://console.firebase.google.com/).
-2. Register a web app and copy its config values into the `VITE_FIREBASE_*` variables in `.env`.
-3. Go to **Authentication → Sign-in method** and enable **Email/Password**.
-4. Go to **Firestore Database** and create a database.
-5. Deploy the security rules (defined in `firestore.rules`):
-
-   ```bash
-   firebase deploy --only firestore:rules
-   ```
-
-### Firestore data model (per user)
-
-```
-users/{uid}                 → profile, pinHash
-  ├─ subjects
-  ├─ attendance
-  ├─ tasks
-  ├─ coursePlans
-  ├─ timetable
-  └─ settings/current
-```
-
-## Run with Docker
-
-The image is a multi-stage build (`node:22-alpine` build → `nginx:alpine` serve). Vite variables are baked in at build time, so pass them as build args.
-
-### Pull the published image
+### Run with Docker
 
 ```bash
-docker pull sharran06/attendify
+# Build production container image
+docker build -t attendify:latest .
+
+# Run container on port 8080
+docker run -d -p 8080:80 --name attendify-app attendify:latest
 ```
 
-> [!NOTE]
-> Published images are built in CI with the project's own Firebase/EmailJS values. To run against your own Firebase project, build the image yourself as below.
-
-### Build and run locally
-
-```bash
-docker build \
-  --build-arg VITE_FIREBASE_API_KEY=... \
-  --build-arg VITE_FIREBASE_AUTH_DOMAIN=... \
-  --build-arg VITE_FIREBASE_PROJECT_ID=... \
-  --build-arg VITE_FIREBASE_STORAGE_BUCKET=... \
-  --build-arg VITE_FIREBASE_MESSAGING_SENDER_ID=... \
-  --build-arg VITE_FIREBASE_APP_ID=... \
-  --build-arg VITE_EMAILJS_SERVICE_ID=... \
-  --build-arg VITE_EMAILJS_TEMPLATE_ID=... \
-  --build-arg VITE_EMAILJS_PUBLIC_KEY=... \
-  -t attendify .
-
-docker run -p 8080:80 attendify
-```
-
-Open <http://localhost:8080>.
-
-### Docker Compose
-
-```bash
-docker compose up --build
-```
-
-<!-- TODO: confirm how docker-compose.yml picks up the VITE_* values (e.g. from .env) and document it here -->
-
-## CI/CD Pipeline
-
-Defined in `.github/workflows/attendify-ci-cd.yml`. It runs on every push to `main` and can also be triggered manually.
-
-1. **Build**: `npm ci` and `npm run build`, with Firebase and EmailJS secrets injected.
-2. **Docker**: build and push the multi-stage image to Docker Hub, tagged `latest` and with the commit SHA.
-3. **Deploy**: publish `dist/` to Firebase Hosting (live channel, project `attendify-d4a2a`).
+### CI/CD Deployment Flow
 
 ```mermaid
 flowchart LR
-    A[Push to main<br/>or manual run] --> B[npm ci]
-    B --> C[npm run build<br/>secrets injected]
-    C --> D[Build Docker image<br/>node:22-alpine → nginx:alpine]
-    D --> E[Push to Docker Hub<br/>latest + commit SHA]
-    C --> F[Deploy dist/ to<br/>Firebase Hosting]
+    A[Push to main] --> B[GitHub Actions]
+    B --> C[npm run build]
+    C --> D[Docker Build & Push]
+    D --> E[Docker Hub: sharran06/attendify]
+    C --> F[Firebase Hosting]
+    F --> G[attendify-d4a2a.web.app]
 ```
 
-### Required GitHub secrets
+Every push to `main` triggers automated verification, Docker image deployment to Docker Hub, and live static asset deployment to Firebase Hosting.
 
-| Secret | Purpose |
-| --- | --- |
-| `VITE_FIREBASE_API_KEY` | Firebase config |
-| `VITE_FIREBASE_AUTH_DOMAIN` | Firebase config |
-| `VITE_FIREBASE_PROJECT_ID` | Firebase config |
-| `VITE_FIREBASE_STORAGE_BUCKET` | Firebase config |
-| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Firebase config |
-| `VITE_FIREBASE_APP_ID` | Firebase config |
-| `VITE_EMAILJS_SERVICE_ID` | EmailJS config |
-| `VITE_EMAILJS_TEMPLATE_ID` | EmailJS config |
-| `VITE_EMAILJS_PUBLIC_KEY` | EmailJS config |
-| `DOCKERHUB_USERNAME` | Docker Hub login |
-| `DOCKERHUB_TOKEN` | Docker Hub login |
-| `FIREBASE_SERVICE_ACCOUNT_ATTENDIFY_D4A2A` | Firebase Hosting deploy |
+---
 
-## Project Structure
+## 👤 Author
 
-```
-src/
-  components/   attendance, auth, dashboard, layout, pwa, ui
-  contexts/     AuthContext, AppContext (Firestore listeners & write actions)
-  hooks/        useAttendanceReminder, usePWAInstall, ...
-  lib/          firebase.ts, defaultTimetable.ts, utils.ts
-  pages/        Dashboard, Subjects, AttendanceCalendar, Tasks, Settings, Login
-  types/        attendance.ts, user.ts
-  utils/        attendance.ts (calculations), exportUtils.ts (PDF export)
-Dockerfile
-docker-compose.yml
-nginx.conf
-firebase.json
-firestore.rules
-.github/workflows/attendify-ci-cd.yml
-```
-
-## How Attendance Is Calculated
-
-Everything is plain arithmetic, with no AI or estimation involved.
-
-Let **a** = classes attended, **b** = classes absent, **T** = target percentage (50–90, default 75).
-Cancelled classes are excluded from both **a** and **b**.
-
-**Current percentage**
-
-```
-percentage = a / (a + b) × 100
-```
-
-**Classes needed to reach the target** (smallest whole *n* such that attending the next *n* classes gets you to **T**)
-
-```
-(a + n) / (a + b + n) ≥ T / 100
-n = ceil( (T × (a + b) − 100 × a) / (100 − T) )      // 0 if already at or above T
-```
-
-**Safe to miss** (largest whole *m* such that missing the next *m* classes keeps you at or above **T**)
-
-```
-a / (a + b + m) ≥ T / 100
-m = floor( (100 × a − T × (a + b)) / T )             // 0 if already below T
-```
-
-**Next-class outcomes**
-
-```
-if you attend: (a + 1) / (a + b + 1) × 100
-if you miss:    a      / (a + b + 1) × 100
-```
-
-> [!NOTE]
-> The calculation logic lives in `src/utils/attendance.ts`.
-
-## Author
-
-**Sharran Nandakumar** · [GitHub](https://github.com/sharran-nk)
+**Sharran Nandakumar**
+* **GitHub**: [@sharran-nk](https://github.com/sharran-nk)
+* **Application**: [Attendify on the Web](https://attendify-d4a2a.web.app)
