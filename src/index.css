@@ -173,8 +173,4 @@
   .safe-area-inset {
     padding-bottom: env(safe-area-inset-bottom, 1rem);
   }
-
-  .bottom-ai-fab {
-    bottom: calc(64px + env(safe-area-inset-bottom, 0px) + 14px);
-  }
 }
