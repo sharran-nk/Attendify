@@ -2,82 +2,53 @@ import { PageContainer } from '@/components/layout/PageContainer';
 import { AttendanceInsights } from '@/components/dashboard/AttendanceInsights';
 import { WeeklyTimetable } from '@/components/dashboard/WeeklyTimetable';
 import { OverallAttendance } from '@/components/dashboard/OverallAttendance';
+import { TodayClasses } from '@/components/dashboard/TodayClasses';
 import { ModeToggle } from '@/components/mode-toggle';
 import { ShareButton } from '@/components/share-button';
+import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
-import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
-import { useApp } from '@/contexts/AppContext';
 import { Download } from 'lucide-react';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
-import { toast } from 'sonner';
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const { subjects } = useApp();
-  const { isInstallable, isInstalled, showPrompt, promptInstall, isIOS } = usePWAInstall();
+  const { isInstalled, showPrompt } = usePWAInstall();
 
-  const handleInstallClick = () => {
-    if (isIOS) {
-      showPrompt();
-    } else {
-      promptInstall();
-    }
-  };
-
-  const greeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good Morning';
-    if (hour < 17) return 'Good Afternoon';
-    return 'Good Evening';
-  };
-
-  const getFirstName = () => {
-    if (!user?.name) return 'Student';
-    return user.name.split(' ')[0];
-  };
-
-  const todayStr = format(new Date(), 'EEEE, MMMM d');
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const firstName = user?.name ? user.name.split(' ')[0] : 'there';
 
   return (
     <PageContainer
-      title={
-        <span className="flex items-center gap-1.5 font-semibold text-foreground">
-          {greeting()},
-          <span className="text-primary font-bold">
-            {getFirstName()}
-          </span>
-        </span>
-      }
-      subtitle={todayStr}
+      title={`${greeting}, ${firstName}`}
+      subtitle={format(new Date(), 'EEEE, MMMM d')}
       rightAction={
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-1">
           <ShareButton />
-          <ModeToggle />
-          {!isInstalled ? (
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={() => showPrompt()}
-              className="flex items-center gap-2 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm font-medium hover:bg-primary/20 transition-colors"
-            >
-              <Download className="w-4 h-4" />
-              Install App
-            </motion.button>
-          ) : null}
+          {/* The sidebar carries the theme toggle on laptops; Settings has it on phones */}
+          <div className="hidden sm:block lg:hidden">
+            <ModeToggle />
+          </div>
+          {!isInstalled && (
+            <Button variant="outline" size="icon" onClick={() => showPrompt()} aria-label="Install app">
+              <Download aria-hidden="true" />
+            </Button>
+          )}
         </div>
       }
     >
-      <div className="space-y-5 pb-8">
-
-        {/* 1. TIMETABLE */}
-        <WeeklyTimetable />
-
-        {/* 2. OVERALL ATTENDANCE SUMMARY */}
-        <OverallAttendance />
-
-        {/* 3. ATTENDANCE INSIGHTS */}
-        <AttendanceInsights />
-
+      <div className="grid grid-cols-1 gap-5 pb-8 lg:grid-cols-12">
+        <div className="min-w-0 space-y-5 lg:col-span-7">
+          <OverallAttendance />
+          <TodayClasses />
+        </div>
+        <div className="min-w-0 space-y-5 lg:col-span-5">
+          <AttendanceInsights />
+        </div>
+        <div className="min-w-0 lg:col-span-12">
+          <WeeklyTimetable />
+        </div>
       </div>
     </PageContainer>
   );

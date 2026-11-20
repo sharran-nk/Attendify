@@ -91,3 +91,15 @@ export function calculateOverallMetrics(
     percentage,
   };
 }
+
+export type AttendanceTone = 'safe' | 'watch' | 'danger';
+
+/**
+ * Buckets a percentage against the user's threshold:
+ * danger = below threshold, watch = within 5 points above it, safe = comfortably above.
+ */
+export function getAttendanceTone(percentage: number, thresholdPercentage: number): AttendanceTone {
+  if (percentage < thresholdPercentage) return 'danger';
+  if (percentage < thresholdPercentage + 5) return 'watch';
+  return 'safe';
+}

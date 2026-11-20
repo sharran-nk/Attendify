@@ -1,115 +1,77 @@
-import { motion } from 'framer-motion';
 import { useApp } from '@/contexts/AppContext';
-import { useNavigate } from 'react-router-dom';
-import { calculateOverallMetrics } from '@/utils/attendance';
+import { calculateOverallMetrics, calculateMissableClasses, calculateConsecutiveClassesNeeded, getAttendanceTone } from '@/utils/attendance';
+import { StatusBadge } from '@/components/ui/StatusBadge';
+import { TallyStrip } from '@/components/ui/TallyStrip';
+import { cn } from '@/lib/utils';
 
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 'es'}`;
+
+/** The page's one bold moment: a huge percentage and the register's tally marks. */
 export function OverallAttendance() {
   const { subjects, attendance, settings } = useApp();
-  const navigate = useNavigate();
+  const threshold = settings.attendanceWarningThreshold || 75;
 
-  const { attended, absent, totalClasses, percentage } = calculateOverallMetrics(subjects, attendance);
-  const roundedPercentage = Math.round(percentage);
-  const isHealthy = roundedPercentage >= (settings.attendanceWarningThreshold || 75);
+  const { attended, absent, cancelled, totalClasses, percentage } = calculateOverallMetrics(subjects, attendance);
+  const hasData = totalClasses > 0;
+  const tone = getAttendanceTone(percentage, threshold);
 
-  // SVG circular gauge calculations
-  const size = 120;
-  const strokeWidth = 12;
-  const center = size / 2;
-  const radius = center - strokeWidth / 2 - 2;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (percentage / 100) * circumference;
+  let guidance = 'Mark your first class to start the tally.';
+  if (hasData) {
+    if (tone === 'danger') {
+      const needed = calculateConsecutiveClassesNeeded(attended, totalClasses, threshold);
+      guidance = `Attend the next ${plural(needed, 'class')} in a row to get back to ${threshold}%.`;
+    } else {
+      const missable = calculateMissableClasses(attended, totalClasses, threshold);
+      guidance =
+        missable > 0
+          ? `You can miss ${plural(missable, 'more class')} and stay above ${threshold}%.`
+          : `You're right on the line. Don't miss the next class.`;
+    }
+  }
 
   return (
-    <div className="ios-card p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm transition-all">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
-          Overall Attendance
+    <section
+      aria-labelledby="overall-heading"
+      className="ios-card margin-rule py-5 pl-10 pr-5 sm:py-6 sm:pl-12 sm:pr-7"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <h2 id="overall-heading" className="text-base font-semibold text-muted-foreground">
+          Overall attendance
         </h2>
-        <button
-          onClick={() => navigate('/subjects')}
-          className="text-xs sm:text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
-        >
-          View All
-        </button>
+        {hasData && <StatusBadge status={tone} />}
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-6 py-2 px-1">
-        {/* Circular Progress Indicator */}
-        <div className="relative flex items-center justify-center shrink-0">
-          <svg
-            width={size}
-            height={size}
-            className="transform -rotate-90 overflow-visible"
-          >
-            {/* Background ring */}
-            <circle
-              cx={center}
-              cy={center}
-              r={radius}
-              stroke="currentColor"
-              strokeWidth={strokeWidth}
-              fill="transparent"
-              className="text-slate-100 dark:text-slate-800/80"
-            />
+      <p
+        className={cn(
+          'tabular mt-1 font-display text-hero font-extrabold',
+          !hasData ? 'text-muted-foreground' : tone === 'danger' ? 'text-destructive' : 'text-foreground'
+        )}
+      >
+        {hasData ? Math.round(percentage) : '--'}
+        <span className="ml-1 text-[2rem] font-bold text-muted-foreground">%</span>
+      </p>
 
-            {/* Animated progress ring */}
-            <motion.circle
-              cx={center}
-              cy={center}
-              r={radius}
-              stroke={isHealthy ? '#10b981' : '#f43f5e'}
-              strokeWidth={strokeWidth}
-              strokeDasharray={circumference}
-              initial={{ strokeDashoffset: circumference }}
-              animate={{ strokeDashoffset }}
-              transition={{ duration: 0.8, ease: 'easeOut' }}
-              strokeLinecap="round"
-              fill="transparent"
-            />
-          </svg>
+      <p className="mt-3 max-w-[40ch] text-base text-foreground">{guidance}</p>
 
-          {/* Centered Percentage */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <span className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${
-              totalClasses === 0 ? 'text-slate-400' : isHealthy ? 'text-slate-900 dark:text-white' : 'text-rose-600 dark:text-rose-400'
-            }`}>
-              {roundedPercentage}%
-            </span>
-          </div>
-        </div>
-
-        {/* Stats Table / List to the right */}
-        <div className="flex-1 w-full space-y-3 sm:pl-4">
-          <div className="flex items-center justify-between py-1 border-b border-slate-100 dark:border-slate-800/80">
-            <span className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">
-              Total Classes
-            </span>
-            <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
-              {totalClasses}
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between py-1 border-b border-slate-100 dark:border-slate-800/80">
-            <span className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">
-              Attended
-            </span>
-            <span className="text-sm sm:text-base font-bold text-emerald-600 dark:text-emerald-400">
-              {attended}
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between py-1">
-            <span className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">
-              Absent
-            </span>
-            <span className="text-sm sm:text-base font-bold text-rose-500 dark:text-rose-400">
-              {absent}
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
+      {hasData && (
+        <>
+          <TallyStrip attended={attended} absent={absent} className="mt-5" />
+          <dl className="mt-5 grid grid-cols-3 gap-4 border-t border-border pt-4">
+            <div>
+              <dt className="text-sm text-muted-foreground">Attended</dt>
+              <dd className="tabular font-display text-xl font-bold text-foreground">{attended}</dd>
+            </div>
+            <div>
+              <dt className="text-sm text-muted-foreground">Absent</dt>
+              <dd className="tabular font-display text-xl font-bold text-foreground">{absent}</dd>
+            </div>
+            <div>
+              <dt className="text-sm text-muted-foreground">Cancelled</dt>
+              <dd className="tabular font-display text-xl font-bold text-foreground">{cancelled}</dd>
+            </div>
+          </dl>
+        </>
+      )}
+    </section>
   );
 }
