@@ -195,12 +195,27 @@ export default function Subjects() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, x: -100 }}
                   transition={{ delay: index * 0.05 }}
-                  className={`ios-card overflow-hidden ${isLow ? 'ring-2 ring-destructive/20 border-destructive/20' : ''}`}
+                  className={`ios-card relative overflow-hidden ${isLow ? 'border-destructive/30' : ''}`}
                 >
+                  {/* Subject colour accent */}
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-y-0 left-0 w-1"
+                    style={{ backgroundColor: subject.color }}
+                  />
                   {/* Subject Header */}
                   <div
-                    className="p-3.5 cursor-pointer active:bg-muted/50 transition-colors"
+                    role="button"
+                    tabIndex={0}
+                    aria-expanded={isExpanded}
+                    className="cursor-pointer p-3.5 pl-4 transition-colors active:bg-muted/50"
                     onClick={() => toggleExpanded(subject.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        toggleExpanded(subject.id);
+                      }
+                    }}
                   >
                     <div className="flex items-center gap-3">
                       <AttendanceRing
@@ -221,9 +236,29 @@ export default function Subjects() {
                             {subject.instructor}
                           </p>
                         )}
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {subject.attendedClasses} / {subject.totalClasses} classes • {subject.credits || 0} credits
-                        </p>
+                        <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+                          <span className="text-xs text-muted-foreground">
+                            {subject.attendedClasses}/{subject.totalClasses} classes · {subject.credits || 0} credits
+                          </span>
+                          {(() => {
+                            const missable = calculateMissableClasses(
+                              subject.attendedClasses,
+                              subject.totalClasses,
+                              settings.attendanceWarningThreshold
+                            );
+                            return (
+                              <span
+                                className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                                  isLow
+                                    ? 'bg-destructive/10 text-destructive'
+                                    : 'bg-success/10 text-success'
+                                }`}
+                              >
+                                {isLow ? 'Below target' : missable > 0 ? `Can miss ${missable}` : 'On the line'}
+                              </span>
+                            );
+                          })()}
+                        </div>
                       </div>
                       <motion.div
                         animate={{ rotate: isExpanded ? 180 : 0 }}
@@ -234,6 +269,7 @@ export default function Subjects() {
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <button
+                            aria-label={`Options for ${subject.name}`}
                             className="p-2 rounded-lg hover:bg-muted transition-colors"
                             onClick={(e) => e.stopPropagation()}
                           >

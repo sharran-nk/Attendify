@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Check, X, Plus, Minus, FileText } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, X, Minus, FileText } from 'lucide-react';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { useApp } from '@/contexts/AppContext';
 import { format, addDays, subDays, startOfWeek, isSameDay } from 'date-fns';
@@ -8,7 +8,7 @@ import { ExportModal } from '@/components/attendance/ExportModal';
 import { Button } from '@/components/ui/button';
 
 export default function AttendanceCalendar() {
-  const { subjects, attendance, addAttendance, deleteAttendance } = useApp();
+  const { subjects, attendance, addAttendance, deleteAttendance, settings } = useApp();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isExportOpen, setIsExportOpen] = useState(false);
 
@@ -63,7 +63,8 @@ export default function AttendanceCalendar() {
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={() => setSelectedDate(subDays(selectedDate, 7))}
-              className="p-2 rounded-lg hover:bg-muted transition-colors"
+              aria-label="Previous week"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-muted/60 transition-colors hover:bg-muted"
             >
               <ChevronLeft className="w-5 h-5" />
             </motion.button>
@@ -73,7 +74,8 @@ export default function AttendanceCalendar() {
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={() => setSelectedDate(addDays(selectedDate, 7))}
-              className="p-2 rounded-lg hover:bg-muted transition-colors"
+              aria-label="Next week"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-muted/60 transition-colors hover:bg-muted"
             >
               <ChevronRight className="w-5 h-5" />
             </motion.button>
@@ -93,18 +95,20 @@ export default function AttendanceCalendar() {
                   key={day.toISOString()}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => setSelectedDate(day)}
-                  className={`flex flex-col items-center py-1.5 rounded-[10px] transition-colors ${isSelected
-                    ? 'bg-primary text-primary-foreground'
+                  aria-label={format(day, 'EEEE, MMMM d')}
+                  aria-pressed={isSelected}
+                  className={`flex flex-col items-center rounded-xl py-2 transition-[background-color,box-shadow,color] duration-200 ${isSelected
+                    ? 'bg-primary text-primary-foreground shadow-md shadow-primary/30'
                     : isToday
-                      ? 'bg-primary/10'
+                      ? 'bg-primary/10 text-primary ring-1 ring-primary/30'
                       : 'hover:bg-muted'
                     }`}
                 >
-                  <span className={`text-[10px] font-medium ${isSelected ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                  <span className={`text-[11px] font-medium ${isSelected ? 'text-primary-foreground/80' : 'text-muted-foreground'
                     }`}>
                     {format(day, 'EEE')}
                   </span>
-                  <span className="text-[13px] font-medium mt-0.5">
+                  <span className="mt-0.5 text-base font-semibold">
                     {format(day, 'd')}
                   </span>
                   {hasAttendance && (
@@ -119,9 +123,12 @@ export default function AttendanceCalendar() {
 
         {/* Day View */}
         <div className="space-y-4">
-          <h2 className="font-semibold text-sm px-0">
-            {format(selectedDate, 'EEEE, MMMM d')}
-          </h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-base font-semibold">{format(selectedDate, 'EEEE, MMMM d')}</h2>
+            {isSameDay(selectedDate, new Date()) && (
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">Today</span>
+            )}
+          </div>
 
           <AnimatePresence mode="popLayout">
             {subjects.length === 0 ? (
@@ -158,11 +165,15 @@ export default function AttendanceCalendar() {
                           <div>
                             <div className="flex items-baseline gap-2">
                               <p className="font-medium text-base">{subject.name}</p>
-                              <span className="text-xs text-muted-foreground">
-                                {subject.totalClasses > 0
-                                  ? ((subject.attendedClasses / subject.totalClasses) * 100).toFixed(1)
-                                  : 0}%
-                              </span>
+                              {(() => {
+                                const pct = subject.totalClasses > 0 ? (subject.attendedClasses / subject.totalClasses) * 100 : 0;
+                                const low = pct < settings.attendanceWarningThreshold;
+                                return (
+                                  <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${low ? 'bg-destructive/10 text-destructive' : 'bg-success/10 text-success'}`}>
+                                    {pct.toFixed(1)}%
+                                  </span>
+                                );
+                              })()}
                             </div>
                             <div className="flex gap-3 text-sm text-muted-foreground">
                               <span className="font-medium text-success">{presentCount} Present</span>
@@ -199,21 +210,23 @@ export default function AttendanceCalendar() {
                           <motion.button
                             whileTap={{ scale: 0.95 }}
                             onClick={() => handleAddAttendance(subject.id, 'present')}
-                            className="flex-1 flex items-center justify-center gap-1 py-2 px-3 rounded-full bg-success/10 text-success text-sm font-medium hover:bg-success/20 transition-colors"
+                            aria-label={`Mark ${subject.name} present`}
+                            className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-full bg-success/10 px-3 text-sm font-semibold text-success transition-colors hover:bg-success/20"
                           >
-                            <Plus className="w-4 h-4" />
                             <Check className="w-4 h-4" />
+                            Present
                           </motion.button>
 
                           <motion.button
                             initial={false}
                             animate={{ 
-                              width: presentCount > 0 ? 36 : 0, 
+                              width: presentCount > 0 ? 44 : 0, 
                               opacity: presentCount > 0 ? 1 : 0,
                               marginLeft: presentCount > 0 ? 4 : 0
                             }}
                             onClick={() => handleRemoveAttendance(subject.id, 'present')}
-                            className="h-9 flex items-center justify-center rounded-full text-muted-foreground hover:bg-secondary/40 hover:text-destructive overflow-hidden transition-colors bg-secondary/20"
+                            aria-label={`Remove one present for ${subject.name}`}
+                            className="h-11 flex items-center justify-center rounded-full text-muted-foreground hover:bg-secondary/40 hover:text-destructive overflow-hidden transition-colors bg-secondary/20"
                           >
                             <Minus className="w-4 h-4" />
                           </motion.button>
@@ -224,21 +237,23 @@ export default function AttendanceCalendar() {
                           <motion.button
                             whileTap={{ scale: 0.95 }}
                             onClick={() => handleAddAttendance(subject.id, 'absent')}
-                            className="flex-1 flex items-center justify-center gap-1 py-2 px-3 rounded-full bg-destructive/10 text-destructive text-sm font-medium hover:bg-destructive/20 transition-colors"
+                            aria-label={`Mark ${subject.name} absent`}
+                            className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-full bg-destructive/10 px-3 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/20"
                           >
-                            <Plus className="w-4 h-4" />
                             <X className="w-4 h-4" />
+                            Absent
                           </motion.button>
 
                           <motion.button
                             initial={false}
                             animate={{ 
-                              width: absentCount > 0 ? 36 : 0, 
+                              width: absentCount > 0 ? 44 : 0, 
                               opacity: absentCount > 0 ? 1 : 0,
                               marginLeft: absentCount > 0 ? 4 : 0
                             }}
                             onClick={() => handleRemoveAttendance(subject.id, 'absent')}
-                            className="h-9 flex items-center justify-center rounded-full text-muted-foreground hover:bg-secondary/40 hover:text-destructive overflow-hidden transition-colors bg-secondary/20"
+                            aria-label={`Remove one absent for ${subject.name}`}
+                            className="h-11 flex items-center justify-center rounded-full text-muted-foreground hover:bg-secondary/40 hover:text-destructive overflow-hidden transition-colors bg-secondary/20"
                           >
                             <Minus className="w-4 h-4" />
                           </motion.button>

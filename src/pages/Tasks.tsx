@@ -114,20 +114,32 @@ export default function Tasks() {
     >
       <div className="space-y-4">
         {/* Filter Tabs */}
-        <div className="ios-card p-1 flex gap-1">
-          {(['all', 'pending', 'completed'] as const).map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`flex-1 py-2 px-3 rounded-xl text-sm font-medium transition-colors ${
-                filter === f 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'text-muted-foreground hover:bg-muted'
-              }`}
-            >
-              {f.charAt(0).toUpperCase() + f.slice(1)}
-            </button>
-          ))}
+        <div className="ios-card p-1 flex gap-1" role="tablist" aria-label="Filter tasks">
+          {(['all', 'pending', 'completed'] as const).map((f) => {
+            const count = f === 'all' ? tasks.length : f === 'pending' ? pendingCount : completedCount;
+            return (
+              <button
+                key={f}
+                role="tab"
+                aria-selected={filter === f}
+                onClick={() => setFilter(f)}
+                className={`flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium transition-[background-color,color,box-shadow] duration-200 ${
+                  filter === f
+                    ? 'bg-primary text-primary-foreground shadow-md shadow-primary/25'
+                    : 'text-muted-foreground hover:bg-muted'
+                }`}
+              >
+                {f.charAt(0).toUpperCase() + f.slice(1)}
+                <span
+                  className={`rounded-full px-1.5 text-xs font-semibold ${
+                    filter === f ? 'bg-primary-foreground/20' : 'bg-muted'
+                  }`}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Tasks List */}
@@ -170,18 +182,23 @@ export default function Tasks() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, x: -100 }}
                     transition={{ delay: index * 0.03 }}
-                    className={`ios-card p-3.5 ${isOverdue ? 'ring-2 ring-destructive/20' : ''}`}
+                    className={`ios-card relative overflow-hidden p-3.5 ${isOverdue ? 'border-destructive/30' : ''} ${task.completed ? 'opacity-70' : ''}`}
                   >
+                    {isOverdue && (
+                      <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1 bg-destructive" />
+                    )}
                     <div className="flex items-start gap-2.5">
                       <motion.button
                         whileTap={{ scale: 0.8 }}
                         onClick={() => toggleTaskComplete(task.id)}
-                        className="mt-0.5 flex-shrink-0"
+                        aria-label={task.completed ? `Mark "${task.title}" as not done` : `Mark "${task.title}" as done`}
+                        aria-pressed={task.completed}
+                        className="-m-1 flex-shrink-0 p-1"
                       >
                         {task.completed ? (
-                          <CheckCircle className="w-5 h-5 text-success" />
+                          <CheckCircle className="w-6 h-6 text-success" />
                         ) : (
-                          <Circle className="w-5 h-5 text-muted-foreground" />
+                          <Circle className="w-6 h-6 text-muted-foreground" />
                         )}
                       </motion.button>
                       
@@ -204,8 +221,12 @@ export default function Tasks() {
                               <span className="text-xs text-muted-foreground">{subject.name}</span>
                             </div>
                           )}
-                          <div className={`flex items-center gap-1 text-xs ${
-                            isOverdue ? 'text-destructive' : 'text-muted-foreground'
+                          <div className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
+                            isOverdue
+                              ? 'bg-destructive/10 text-destructive'
+                              : isToday(parseISO(task.dueDate)) && !task.completed
+                                ? 'bg-warning/10 text-warning'
+                                : 'bg-muted text-muted-foreground'
                           }`}>
                             <Calendar className="w-3 h-3" />
                             <span>{formatDueDate(task.dueDate)}</span>
@@ -217,13 +238,15 @@ export default function Tasks() {
                       <div className="flex flex-col items-end gap-2">
                         <button
                           onClick={() => window.open(getGoogleCalendarUrl(task, subject?.name), '_blank')}
-                          className="p-2 rounded-lg hover:bg-muted transition-colors text-blue-500 hover:text-blue-600"
+                          className="p-2 rounded-lg hover:bg-muted transition-colors text-primary hover:text-primary/80"
                           title="Add to Google Calendar"
+                          aria-label={`Add "${task.title}" to Google Calendar`}
                         >
                           <ExternalLink className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => deleteTask(task.id)}
+                          aria-label={`Delete "${task.title}"`}
                           className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-destructive"
                         >
                           <Trash2 className="w-4 h-4" />
