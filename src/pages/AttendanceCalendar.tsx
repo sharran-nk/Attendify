@@ -175,11 +175,9 @@ export default function AttendanceCalendar() {
                                 );
                               })()}
                             </div>
-                            <div className="flex gap-3 text-sm text-muted-foreground">
-                              <span className="font-medium text-success">{presentCount} Present</span>
-                              <span className="text-border">•</span>
-                              <span className="font-medium text-destructive">{absentCount} Absent</span>
-                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              {presentCount} present · {absentCount} absent
+                            </p>
                             
                             {/* Display marked times for multiple classes */}
                             {entries.length > 0 && (

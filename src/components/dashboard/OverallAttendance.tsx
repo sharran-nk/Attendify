@@ -1,14 +1,11 @@
 import { useId } from 'react';
 import { motion } from 'framer-motion';
 import { useApp } from '@/contexts/AppContext';
-import { useNavigate } from 'react-router-dom';
 import { calculateOverallMetrics } from '@/utils/attendance';
-import { CheckCircle2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function OverallAttendance() {
   const { subjects, attendance, settings } = useApp();
-  const navigate = useNavigate();
   const gradientId = useId();
 
   const { attended, absent, totalClasses, percentage } = calculateOverallMetrics(subjects, attendance);
@@ -17,11 +14,10 @@ export function OverallAttendance() {
   const hasData = totalClasses > 0;
   const isHealthy = roundedPercentage >= threshold;
 
-  // SVG circular gauge
-  const size = 144;
-  const strokeWidth = 12;
+  const size = 152;
+  const strokeWidth = 10;
   const center = size / 2;
-  const radius = center - strokeWidth / 2 - 4;
+  const radius = center - strokeWidth / 2 - 2;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
@@ -30,106 +26,79 @@ export function OverallAttendance() {
     : { from: 'hsl(var(--destructive))', to: 'hsl(25 95% 55%)' };
 
   const stats = [
-    { label: 'Total', value: totalClasses, tint: 'bg-primary/10 text-primary' },
-    { label: 'Attended', value: attended, tint: 'bg-success/10 text-success' },
-    { label: 'Absent', value: absent, tint: 'bg-destructive/10 text-destructive' },
+    { label: 'Attended', value: attended },
+    { label: 'Absent', value: absent },
+    { label: 'Total', value: totalClasses },
   ];
 
   return (
-    <div className="ios-card relative overflow-hidden p-5">
-      {/* Soft tint behind the ring */}
-      <div
-        aria-hidden="true"
-        className={cn(
-          'pointer-events-none absolute -top-20 left-1/2 h-56 w-56 -translate-x-1/2 rounded-full blur-3xl',
-          !hasData ? 'bg-muted' : isHealthy ? 'bg-success/15' : 'bg-destructive/15'
-        )}
-      />
-
-      <div className="relative">
-        <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-foreground sm:text-lg">Overall Attendance</h2>
-          <button
-            onClick={() => navigate('/subjects')}
-            className="rounded-md px-1 text-sm font-semibold text-primary transition-opacity hover:opacity-70"
+    <section className="ios-card px-5 py-6" aria-label="Overall attendance">
+      <div className="flex flex-col items-center">
+        <div className="relative flex items-center justify-center">
+          <svg
+            width={size}
+            height={size}
+            className="-rotate-90"
+            role="img"
+            aria-label={`Overall attendance ${roundedPercentage} percent`}
           >
-            View All
-          </button>
-        </div>
+            <defs>
+              <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor={stops.from} />
+                <stop offset="100%" stopColor={stops.to} />
+              </linearGradient>
+            </defs>
+            <circle
+              cx={center}
+              cy={center}
+              r={radius}
+              stroke="hsl(var(--muted))"
+              strokeWidth={strokeWidth}
+              fill="transparent"
+            />
+            <motion.circle
+              cx={center}
+              cy={center}
+              r={radius}
+              stroke={`url(#${gradientId})`}
+              strokeWidth={strokeWidth}
+              strokeDasharray={circumference}
+              initial={{ strokeDashoffset: circumference }}
+              animate={{ strokeDashoffset }}
+              transition={{ duration: 0.9, ease: [0.23, 1, 0.32, 1] }}
+              strokeLinecap="round"
+              fill="transparent"
+            />
+          </svg>
 
-        <div className="mt-4 flex flex-col items-center gap-4">
-          <div className="relative flex items-center justify-center">
-            <svg
-              width={size}
-              height={size}
-              className="-rotate-90 overflow-visible drop-shadow-sm"
-              role="img"
-              aria-label={`Overall attendance ${roundedPercentage} percent`}
-            >
-              <defs>
-                <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stopColor={stops.from} />
-                  <stop offset="100%" stopColor={stops.to} />
-                </linearGradient>
-              </defs>
-              <circle
-                cx={center}
-                cy={center}
-                r={radius}
-                stroke="hsl(var(--muted))"
-                strokeWidth={strokeWidth}
-                fill="transparent"
-              />
-              <motion.circle
-                cx={center}
-                cy={center}
-                r={radius}
-                stroke={`url(#${gradientId})`}
-                strokeWidth={strokeWidth}
-                strokeDasharray={circumference}
-                initial={{ strokeDashoffset: circumference }}
-                animate={{ strokeDashoffset }}
-                transition={{ duration: 0.9, ease: [0.23, 1, 0.32, 1] }}
-                strokeLinecap="round"
-                fill="transparent"
-              />
-            </svg>
-
-            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-              <span
-                className={cn(
-                  'text-4xl font-extrabold tracking-tight',
-                  !hasData ? 'text-muted-foreground' : isHealthy ? 'text-foreground' : 'text-destructive'
-                )}
-              >
-                {roundedPercentage}%
-              </span>
-              <span className="text-xs font-medium text-muted-foreground">attendance</span>
-            </div>
-          </div>
-
-          {hasData && (
+          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
             <span
               className={cn(
-                'inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium',
-                isHealthy ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'
+                'text-4xl font-bold tracking-tight',
+                !hasData ? 'text-muted-foreground' : isHealthy ? 'text-foreground' : 'text-destructive'
               )}
             >
-              {isHealthy ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
-              {isHealthy ? `On track, above ${threshold}%` : `Below ${threshold}% target`}
+              {roundedPercentage}%
             </span>
-          )}
+            <span className="text-xs text-muted-foreground">attendance</span>
+          </div>
         </div>
 
-        <div className="mt-5 grid grid-cols-3 gap-3">
-          {stats.map(stat => (
-            <div key={stat.label} className={cn('rounded-xl px-3 py-2.5 text-center', stat.tint)}>
-              <div className="text-xl font-bold leading-tight">{stat.value}</div>
-              <div className="mt-0.5 text-xs font-medium opacity-80">{stat.label}</div>
-            </div>
-          ))}
-        </div>
+        {hasData && (
+          <p className={cn('mt-4 text-sm font-medium', isHealthy ? 'text-success' : 'text-destructive')}>
+            {isHealthy ? `On track, above ${threshold}%` : `Below your ${threshold}% target`}
+          </p>
+        )}
       </div>
-    </div>
+
+      <dl className="mt-6 grid grid-cols-3 divide-x divide-border/70 text-center">
+        {stats.map(stat => (
+          <div key={stat.label}>
+            <dd className="text-xl font-semibold">{stat.value}</dd>
+            <dt className="text-sm text-muted-foreground">{stat.label}</dt>
+          </div>
+        ))}
+      </dl>
+    </section>
   );
 }

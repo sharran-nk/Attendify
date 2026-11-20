@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, CheckCircle, Circle, Calendar, Trash2, ExternalLink } from 'lucide-react';
+import { Plus, CheckCircle, Circle, Calendar, Trash2, ExternalLink, MoreVertical } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { useApp } from '@/contexts/AppContext';
 import { format, parseISO, isToday, isPast, isTomorrow } from 'date-fns';
@@ -235,23 +236,31 @@ export default function Tasks() {
                         </div>
                       </div>
 
-                      <div className="flex flex-col items-end gap-2">
-                        <button
-                          onClick={() => window.open(getGoogleCalendarUrl(task, subject?.name), '_blank')}
-                          className="p-2 rounded-lg hover:bg-muted transition-colors text-primary hover:text-primary/80"
-                          title="Add to Google Calendar"
-                          aria-label={`Add "${task.title}" to Google Calendar`}
-                        >
-                          <ExternalLink className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => deleteTask(task.id)}
-                          aria-label={`Delete "${task.title}"`}
-                          className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-destructive"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button
+                            aria-label={`Options for "${task.title}"`}
+                            className="-mr-1 rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted"
+                          >
+                            <MoreVertical className="h-5 w-5" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => window.open(getGoogleCalendarUrl(task, subject?.name), '_blank')}
+                          >
+                            <ExternalLink className="mr-2 h-4 w-4" />
+                            Add to Google Calendar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => deleteTask(task.id)}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </motion.div>
                 );

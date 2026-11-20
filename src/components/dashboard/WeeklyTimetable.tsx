@@ -31,16 +31,16 @@ export function WeeklyTimetable() {
   };
 
   return (
-    <div className="ios-card flex items-center justify-between p-4 sm:p-5">
+    <div className="ios-card flex items-center justify-between px-5 py-4">
       <div 
         className={`flex items-center gap-4 ${settings.timetableImage ? 'cursor-pointer' : ''}`}
         onClick={() => { if (settings.timetableImage) setIsOpen(true); }}
       >
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 text-primary">
-          <ImageIcon className="w-6 h-6" />
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <ImageIcon className="h-5 w-5" />
         </div>
         <div>
-          <h2 className="font-bold text-base">Timetable</h2>
+          <h2 className="text-base font-semibold">Timetable</h2>
           <p className="text-xs text-muted-foreground">
             {settings.timetableImage ? "Tap to view schedule" : "No image uploaded"}
           </p>

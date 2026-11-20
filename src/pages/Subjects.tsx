@@ -197,18 +197,12 @@ export default function Subjects() {
                   transition={{ delay: index * 0.05 }}
                   className={`ios-card relative overflow-hidden ${isLow ? 'border-destructive/30' : ''}`}
                 >
-                  {/* Subject colour accent */}
-                  <span
-                    aria-hidden="true"
-                    className="absolute inset-y-0 left-0 w-1"
-                    style={{ backgroundColor: subject.color }}
-                  />
                   {/* Subject Header */}
                   <div
                     role="button"
                     tabIndex={0}
                     aria-expanded={isExpanded}
-                    className="cursor-pointer p-3.5 pl-4 transition-colors active:bg-muted/50"
+                    className="cursor-pointer p-4 transition-colors active:bg-muted/50"
                     onClick={() => toggleExpanded(subject.id)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
@@ -238,7 +232,7 @@ export default function Subjects() {
                         )}
                         <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
                           <span className="text-xs text-muted-foreground">
-                            {subject.attendedClasses}/{subject.totalClasses} classes · {subject.credits || 0} credits
+                            {subject.attendedClasses}/{subject.totalClasses} classes
                           </span>
                           {(() => {
                             const missable = calculateMissableClasses(
