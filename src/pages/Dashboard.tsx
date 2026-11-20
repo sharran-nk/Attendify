@@ -21,8 +21,8 @@ export default function Dashboard() {
     >
       <div className="space-y-5 pb-8">
         <OverallAttendance />
-        <AttendanceInsights />
         <WeeklyTimetable />
+        <AttendanceInsights />
       </div>
     </PageContainer>
   );
