@@ -42,26 +42,24 @@ export default function Dashboard() {
   return (
     <PageContainer
       title={
-        <span className="flex items-center gap-1.5 font-semibold text-foreground">
-          {greeting()},
-          <span className="text-primary font-bold">
-            {getFirstName()}
-          </span>
+        <span className="block truncate font-semibold text-foreground">
+          {greeting()}, <span className="font-bold text-primary">{getFirstName()}</span>
         </span>
       }
       subtitle={todayStr}
       rightAction={
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-2">
           <ShareButton />
           <ModeToggle />
           {!isInstalled ? (
             <motion.button
-              whileTap={{ scale: 0.9 }}
+              whileTap={{ scale: 0.93 }}
               onClick={() => showPrompt()}
-              className="flex items-center gap-2 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm font-medium hover:bg-primary/20 transition-colors"
+              aria-label="Install app"
+              className="flex h-10 items-center gap-2 rounded-full bg-primary/10 px-3 text-sm font-medium text-primary transition-colors hover:bg-primary/20 sm:px-4"
             >
-              <Download className="w-4 h-4" />
-              Install App
+              <Download className="h-4 w-4" />
+              <span className="hidden sm:inline">Install App</span>
             </motion.button>
           ) : null}
         </div>
