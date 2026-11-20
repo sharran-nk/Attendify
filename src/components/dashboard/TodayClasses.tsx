@@ -1,20 +1,111 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { useApp } from '@/contexts/AppContext';
 import { format } from 'date-fns';
 import { DayOfWeek, TimetableSlot, Subject } from '@/types/attendance';
 import { generateDefaultTimetable } from '@/lib/defaultTimetable';
-import { Check, X, Clock, Upload, Ban, ChevronDown } from 'lucide-react';
+import { Check, X, Clock, Upload, Ban } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { StatusBadge, type Status } from '@/components/ui/StatusBadge';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import { formatMinutesTo12h, getTimeRangeString, parseTimeToMinutes, findMatchingSubject } from '@/utils/timetable';
+
+// Standard 50-minute slot parser & range calculator
+function parseTimeToMinutes(timeStr: string): number {
+  const parts = timeStr.trim().split(':');
+  if (parts.length < 2) return 0;
+  let hours = parseInt(parts[0], 10);
+  const minutes = parseInt(parts[1], 10);
+  
+  // Normalize 1-7 PM college timings if not in 24h
+  if (hours >= 1 && hours <= 7) {
+    hours += 12;
+  }
+  return hours * 60 + minutes;
+}
+
+function formatMinutesTo12h(totalMinutes: number): string {
+  let hours = Math.floor(totalMinutes / 60);
+  const mins = totalMinutes % 60;
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  if (hours === 0) hours = 12;
+  const minsStr = mins < 10 ? `0${mins}` : `${mins}`;
+  return `${hours}:${minsStr} ${ampm}`;
+}
+
+function getTimeRangeString(startTime: string): { displayRange: string; startMin: number; endMin: number } {
+  const startMin = parseTimeToMinutes(startTime);
+  const endMin = startMin + 50; // default 50-minute college period
+  return {
+    displayRange: `${formatMinutesTo12h(startMin)} - ${formatMinutesTo12h(endMin)}`,
+    startMin,
+    endMin,
+  };
+}
+
+// Clean string for normalized comparison (lowercase, single spaces, stripped punctuation)
+function normalizeName(str: string): string {
+  return str.toLowerCase().replace(/[^a-z0-9]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Matches a timetable slot to an existing user Subject in the Attendance tab.
+ * 1. Exact subject ID match
+ * 2. Exact name match (normalized case and whitespace)
+ * 3. Exact acronym match (e.g., "Deep Learning" -> "dl")
+ * Returns undefined if no existing subject matches.
+ */
+function findMatchingSubject(slot: TimetableSlot, userSubjects: Subject[]): Subject | undefined {
+  if (!userSubjects || userSubjects.length === 0) return undefined;
+
+  // 1. Direct ID match
+  if (slot.subjectId) {
+    const byId = userSubjects.find(s => s.id === slot.subjectId);
+    if (byId) return byId;
+  }
+
+  if (!slot.subjectName) return undefined;
+  const slotNorm = normalizeName(slot.subjectName);
+  if (!slotNorm) return undefined;
+
+  // 2. Exact normalized name match
+  const byExactName = userSubjects.find(s => normalizeName(s.name) === slotNorm);
+  if (byExactName) return byExactName;
+
+  // 3. Word boundary or contains match (e.g., "IP Lab" -> "IP", "Image Processing (IP)" -> "IP")
+  const byWordBoundary = userSubjects.find(s => {
+    const subNorm = normalizeName(s.name);
+    if (subNorm === slotNorm) return true;
+    const subWords = subNorm.split(' ');
+    const slotWords = slotNorm.split(' ');
+    // Single word exact token match (e.g. "IP" in ["digital", "image", "processing", "ip"])
+    if (subWords.includes(slotNorm) || slotWords.includes(subNorm)) return true;
+    return false;
+  });
+  if (byWordBoundary) return byWordBoundary;
+
+  // 4. Normalized acronym match (e.g., "Image Processing" -> "IP", "Deep Learning" -> "DL")
+  const byAcronym = userSubjects.find(s => {
+    const subNorm = normalizeName(s.name);
+    // First letter of each word
+    const subAcronym = subNorm.split(' ').map(w => w[0]).join('');
+    const slotAcronym = slotNorm.split(' ').map(w => w[0]).join('');
+
+    return (
+      (slotNorm.length >= 2 && subAcronym === slotNorm) ||
+      (subNorm.length >= 2 && slotAcronym === subNorm) ||
+      (subAcronym && slotAcronym && subAcronym === slotAcronym)
+    );
+  });
+  if (byAcronym) return byAcronym;
+
+  return undefined;
+}
 
 export function TodayClasses() {
   const { subjects, attendance, timetable, addAttendance, updateAttendance, deleteAttendance, settings } = useApp();
@@ -36,17 +127,26 @@ export function TodayClasses() {
   const allTodaySlots = useMemo(() => {
     return effectiveTimetable
       .filter(s => s.day === dayName && !s.isBreak && (s.subjectId || s.subjectName))
-      .map(slot => ({ ...slot, ...getTimeRangeString(slot.startTime) }))
+      .map(slot => {
+        const timeInfo = getTimeRangeString(slot.startTime);
+        return {
+          ...slot,
+          ...timeInfo,
+        };
+      })
       .sort((a, b) => a.startMin - b.startMin);
   }, [effectiveTimetable, dayName]);
 
-  // Only display slots whose subject exists in the user's subject list
+  // STRICT FILTER: Only display slots whose subject exists in the user's Attendance tab!
   const todaySlots = useMemo(() => {
     return allTodaySlots
       .map(slot => {
         const matchedSubject = findMatchingSubject(slot, subjects);
         if (!matchedSubject) return null;
-        return { ...slot, matchedSubject };
+        return {
+          ...slot,
+          matchedSubject,
+        };
       })
       .filter((slot): slot is (typeof allTodaySlots[0] & { matchedSubject: Subject }) => slot !== null);
   }, [allTodaySlots, subjects]);
@@ -60,31 +160,29 @@ export function TodayClasses() {
     return upcoming ? upcoming.id : null;
   }, [todaySlots, nowMinutes]);
 
+  // Handle setting status
   const handleSetStatus = async (
     slot: TimetableSlot,
     matchedSubjectId: string,
     newStatus: 'present' | 'absent' | 'cancelled' | 'unmarked'
   ) => {
     const slotTimeFormatted = formatMinutesTo12h(parseTimeToMinutes(slot.startTime));
-
-    // Find matching entry for this subject today with matching slot time or tag
-    const existingEntry =
-      attendance.find(
-        a =>
-          a.date === todayDateStr &&
-          a.subjectId === matchedSubjectId &&
-          (a.notes === `slot:${slot.id}` || a.time === slotTimeFormatted)
-      ) ||
-      attendance.find(
-        // Fallback: any entry today for this subject without another slot tag
-        a => a.date === todayDateStr && a.subjectId === matchedSubjectId && !a.notes
-      );
+    
+    // Find matching entry for this subject on today with matching slot time or time stamp
+    const existingEntry = attendance.find(
+      a => a.date === todayDateStr &&
+           a.subjectId === matchedSubjectId &&
+           (a.notes === `slot:${slot.id}` || a.time === slotTimeFormatted)
+    ) || attendance.find(
+      // Fallback: any entry today for this subject without another slot tag
+      a => a.date === todayDateStr && a.subjectId === matchedSubjectId && !a.notes
+    );
 
     try {
       if (newStatus === 'unmarked') {
         if (existingEntry) {
           await deleteAttendance(existingEntry.id);
-          toast.success('Attendance reset');
+          toast.success("Attendance unmarked");
         }
         return;
       }
@@ -94,6 +192,7 @@ export function TodayClasses() {
           status: newStatus,
           notes: `slot:${slot.id}`,
         });
+        toast.success(`Marked as ${newStatus}`);
       } else {
         await addAttendance({
           subjectId: matchedSubjectId,
@@ -102,11 +201,11 @@ export function TodayClasses() {
           time: slotTimeFormatted,
           notes: `slot:${slot.id}`,
         });
+        toast.success(`Marked as ${newStatus}`);
       }
-      toast.success(`Marked ${newStatus}`);
     } catch (e) {
       console.error(e);
-      toast.error("Couldn't update attendance. Try again.");
+      toast.error("Failed to update attendance");
     }
   };
 
@@ -114,162 +213,225 @@ export function TodayClasses() {
   const hasNoTimetableConfigured = (!timetable || timetable.length === 0) && !settings.timetableImage;
 
   return (
-    <section aria-labelledby="today-heading" className="ios-card p-5">
-      <div className="flex items-start justify-between gap-3">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-5 transition-all">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 id="today-heading" className="text-xl font-bold text-foreground">
-            Today's classes
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+            Today's Classes
           </h2>
-          <p className="mt-0.5 text-sm text-muted-foreground">{format(todayDate, 'EEEE, MMMM d')}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            {format(todayDate, 'EEEE, MMMM d')}
+          </p>
         </div>
         <button
           onClick={() => navigate('/attendance')}
-          className="press -mr-2 min-h-11 rounded-md px-2 text-sm font-medium text-foreground underline-offset-4 hover:underline"
+          className="text-xs sm:text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
         >
-          Open attendance
+          View Attendance
         </button>
       </div>
 
-      {todaySlots.length === 0 ? (
-        <div className="py-8">
-          {allTodaySlots.length > 0 ? (
-            <>
-              <p className="text-base font-medium text-foreground">None of today's classes match your subjects</p>
-              <p className="mt-1 max-w-[44ch] text-sm text-muted-foreground">
-                The timetable has classes today, but those subjects aren't in your list yet.
-              </p>
-              <button
-                onClick={() => navigate('/subjects')}
-                className="press mt-4 inline-flex min-h-11 items-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground"
-              >
-                Add subjects
-              </button>
-            </>
-          ) : (
-            <>
-              <p className="text-base font-medium text-foreground">No classes scheduled today</p>
-              {hasNoTimetableConfigured ? (
-                <>
-                  <p className="mt-1 max-w-[44ch] text-sm text-muted-foreground">
-                    Upload a photo of your timetable to keep it handy.
-                  </p>
+      {/* Classes list */}
+      <div className="space-y-3">
+        {todaySlots.length === 0 ? (
+          <div className="py-8 text-center flex flex-col items-center justify-center">
+            <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3 text-slate-400">
+              <Clock className="w-6 h-6" />
+            </div>
+            
+            {/* If timetable has classes today, but none match the user's Attendance subjects */}
+            {allTodaySlots.length > 0 ? (
+              <>
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  No classes found for your subjects today.
+                </p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 max-w-xs mx-auto">
+                  Today's timetable has classes, but they aren't in your Attendance tab yet.
+                </p>
+                <div className="mt-4">
                   <button
-                    onClick={() => {
-                      const timetableInput = document.querySelector(
-                        'input[type="file"][accept*="image"]'
-                      ) as HTMLInputElement;
-                      if (timetableInput) timetableInput.click();
-                      else navigate('/subjects');
-                    }}
-                    className="press mt-4 inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground"
+                    onClick={() => navigate('/subjects')}
+                    className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all"
                   >
-                    <Upload className="h-4 w-4" aria-hidden="true" />
-                    Upload timetable
+                    Add Subjects to Attendance
                   </button>
-                </>
-              ) : (
-                <p className="mt-1 text-sm text-muted-foreground">Enjoy the free day.</p>
-              )}
-            </>
-          )}
-        </div>
-      ) : (
-        <ul className="mt-2 divide-y divide-border">
-          {todaySlots.map(slot => {
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  No classes scheduled today.
+                </p>
+                {hasNoTimetableConfigured ? (
+                  <div className="mt-4">
+                    <button
+                      onClick={() => {
+                        const timetableInput = document.querySelector('input[type="file"][accept*="image"]') as HTMLInputElement;
+                        if (timetableInput) timetableInput.click();
+                        else navigate('/subjects');
+                      }}
+                      className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all"
+                    >
+                      <Upload className="w-3.5 h-3.5" />
+                      Upload Timetable
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                    Enjoy your free day or catch up on studies!
+                  </p>
+                )}
+              </>
+            )}
+          </div>
+        ) : (
+          todaySlots.map((slot, index) => {
             const subject = slot.matchedSubject;
+            const subjectDisplayName = subject.name;
+            const subjectColor = subject.color || "#4f46e5";
             const slotTimeFormatted = formatMinutesTo12h(slot.startMin);
 
+            // Find attendance record for this slot
             const record = attendance.find(
-              a =>
-                a.date === todayDateStr &&
-                a.subjectId === subject.id &&
-                (a.notes === `slot:${slot.id}` || a.time === slotTimeFormatted || !a.notes)
+              a => a.date === todayDateStr &&
+                   a.subjectId === subject.id &&
+                   (
+                     a.notes === `slot:${slot.id}` ||
+                     a.time === slotTimeFormatted ||
+                     !a.notes
+                   )
             );
 
-            let status: Status = 'unmarked';
+            // Determine Status
+            let status: 'present' | 'absent' | 'cancelled' | 'upcoming' | 'not_marked' = 'not_marked';
+
             if (record) {
-              status = record.status;
-            } else if (slot.startMin > nowMinutes) {
-              status = 'upcoming';
+              if (record.status === 'present') status = 'present';
+              else if (record.status === 'absent') status = 'absent';
+              else if (record.status === 'cancelled') status = 'cancelled';
+            } else {
+              // If not marked, check if class is in the future
+              if (slot.startMin > nowMinutes) {
+                status = 'upcoming';
+              } else {
+                status = 'not_marked';
+              }
             }
 
             const isNext = slot.id === nextUpcomingSlotId && status === 'upcoming';
-            const badge = <StatusBadge status={status} />;
 
             return (
-              <li key={slot.id} className="flex items-center gap-3 py-3.5">
-                <span
-                  className="h-2.5 w-2.5 shrink-0 rounded-full"
-                  style={{ backgroundColor: subject.color || 'hsl(var(--primary))' }}
-                  aria-hidden="true"
+              <motion.div
+                key={slot.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.04 }}
+                className={`relative flex items-center justify-between p-3.5 sm:p-4 rounded-xl border transition-all ${
+                  isNext
+                    ? 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900/50 shadow-sm'
+                    : 'bg-slate-50/70 dark:bg-slate-800/40 hover:bg-slate-100/70 dark:hover:bg-slate-800/70 border-slate-100 dark:border-slate-800'
+                }`}
+              >
+                {/* Colored Vertical Accent on the Left */}
+                <div
+                  className="absolute left-0 top-3 bottom-3 w-1.5 rounded-r-full"
+                  style={{ backgroundColor: subjectColor }}
                 />
 
-                <div className="min-w-0 flex-1">
-                  <p className="flex items-center gap-2 text-base font-medium text-foreground">
-                    <span className="truncate">{subject.name}</span>
+                {/* Left side: Subject name & time */}
+                <div className="pl-3.5 pr-2 min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white truncate">
+                      {subjectDisplayName}
+                    </h3>
                     {isNext && (
-                      <span className="shrink-0 rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground">
+                      <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-600 dark:text-blue-300">
                         Next
                       </span>
                     )}
-                  </p>
-                  <p className="mt-0.5 flex items-center gap-1.5 text-sm text-muted-foreground">
-                    <Clock className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                    <span className="tabular">{slot.displayRange}</span>
-                  </p>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    <Clock className="w-3.5 h-3.5 shrink-0" />
+                    <span>{slot.displayRange}</span>
+                  </div>
                 </div>
 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      aria-label={`${subject.name}, ${slot.displayRange}. Status: ${status}. Change status`}
-                      className="press flex min-h-11 shrink-0 items-center gap-0.5 rounded-lg pl-0.5 pr-1"
-                    >
-                      {badge}
-                      <ChevronDown className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                    </button>
-                  </DropdownMenuTrigger>
+                {/* Right side: Status Badge + Action Dropdown */}
+                <div className="shrink-0 pl-2">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        className={`inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm ${
+                          status === 'present'
+                            ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
+                            : status === 'absent'
+                            ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800'
+                            : status === 'upcoming'
+                            ? 'bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800'
+                            : status === 'cancelled'
+                            ? 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-slate-700'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-200'
+                        }`}
+                      >
+                        {status === 'present' && <Check className="w-3.5 h-3.5" />}
+                        {status === 'absent' && <X className="w-3.5 h-3.5" />}
+                        {status === 'cancelled' && <Ban className="w-3.5 h-3.5" />}
+                        <span>
+                          {status === 'present'
+                            ? 'Present'
+                            : status === 'absent'
+                            ? 'Absent'
+                            : status === 'upcoming'
+                            ? 'Upcoming'
+                            : status === 'cancelled'
+                            ? 'Cancelled'
+                            : 'Not Marked'}
+                        </span>
+                      </button>
+                    </DropdownMenuTrigger>
 
-                  <DropdownMenuContent align="end" className="w-44">
-                    <DropdownMenuItem
-                      className="min-h-10 cursor-pointer gap-2 font-medium text-success focus:text-success"
-                      onClick={() => handleSetStatus(slot, subject.id, 'present')}
-                    >
-                      <Check className="h-4 w-4" aria-hidden="true" />
-                      Mark present
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="min-h-10 cursor-pointer gap-2 font-medium text-destructive focus:text-destructive"
-                      onClick={() => handleSetStatus(slot, subject.id, 'absent')}
-                    >
-                      <X className="h-4 w-4" aria-hidden="true" />
-                      Mark absent
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="min-h-10 cursor-pointer gap-2 font-medium"
-                      onClick={() => handleSetStatus(slot, subject.id, 'cancelled')}
-                    >
-                      <Ban className="h-4 w-4" aria-hidden="true" />
-                      Mark cancelled
-                    </DropdownMenuItem>
-                    {record && (
-                      <>
-                        <DropdownMenuSeparator />
+                    <DropdownMenuContent align="end" className="w-40">
+                      <DropdownMenuItem
+                        className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-medium cursor-pointer"
+                        onClick={() => handleSetStatus(slot, subject.id, 'present')}
+                      >
+                        <Check className="w-4 h-4" />
+                        Mark Present
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem
+                        className="flex items-center gap-2 text-rose-600 dark:text-rose-400 font-medium cursor-pointer"
+                        onClick={() => handleSetStatus(slot, subject.id, 'absent')}
+                      >
+                        <X className="w-4 h-4" />
+                        Mark Absent
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem
+                        className="flex items-center gap-2 text-slate-600 dark:text-slate-400 font-medium cursor-pointer"
+                        onClick={() => handleSetStatus(slot, subject.id, 'cancelled')}
+                      >
+                        <Ban className="w-4 h-4" />
+                        Mark Cancelled
+                      </DropdownMenuItem>
+
+                      {record && (
                         <DropdownMenuItem
-                          className="min-h-10 cursor-pointer font-medium text-muted-foreground"
+                          className="flex items-center gap-2 text-slate-500 font-medium cursor-pointer border-t mt-1"
                           onClick={() => handleSetStatus(slot, subject.id, 'unmarked')}
                         >
-                          Reset
+                          Reset to Unmarked
                         </DropdownMenuItem>
-                      </>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </li>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </motion.div>
             );
-          })}
-        </ul>
-      )}
-    </section>
+          })
+        )}
+      </div>
+    </div>
   );
 }
