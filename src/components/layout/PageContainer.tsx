@@ -18,14 +18,14 @@ export function PageContainer({ children, title, subtitle, rightAction }: PageCo
       className="min-h-screen pb-20 pt-safe"
     >
       {(title || rightAction) && (
-        <header className="sticky top-0 z-40 glass-effect px-4 py-3 border-b border-transparent">
+        <header className="sticky top-0 z-40 rounded-b-3xl bg-gradient-to-br from-rose-500 via-red-500 to-orange-500 px-4 pb-4 pt-[calc(0.75rem+env(safe-area-inset-top))] text-white shadow-lg shadow-red-500/20">
           <div className="flex items-center justify-between w-full max-w-7xl mx-auto">
             <div>
               {title && (
-                <h1 className="text-[22px] font-semibold tracking-tight text-foreground">{title}</h1>
+                <h1 className="text-[22px] font-semibold tracking-tight text-white">{title}</h1>
               )}
               {subtitle && (
-                <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>
+                <p className="text-xs text-white/80 mt-0.5">{subtitle}</p>
               )}
             </div>
             {rightAction}

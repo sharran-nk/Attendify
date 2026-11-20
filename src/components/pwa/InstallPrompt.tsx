@@ -31,7 +31,7 @@ export function InstallPrompt() {
 
           <div className="flex flex-col items-center text-center space-y-4">
             {/* App Icon */}
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center shadow-lg">
               <span className="text-white font-bold text-3xl">A</span>
             </div>
             
@@ -48,7 +48,7 @@ export function InstallPrompt() {
                 <ol className="text-sm text-left space-y-3 text-muted-foreground">
                   <li className="flex items-center gap-3">
                     <div className="bg-background rounded-lg p-2 shadow-sm border border-border/50">
-                      <Share size={16} className="text-blue-500" />
+                      <Share size={16} className="text-rose-500" />
                     </div>
                     <span>Tap the <strong>Share</strong> button</span>
                   </li>

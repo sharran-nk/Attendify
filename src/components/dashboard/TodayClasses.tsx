@@ -226,7 +226,7 @@ export function TodayClasses() {
         </div>
         <button
           onClick={() => navigate('/attendance')}
-          className="text-xs sm:text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+          className="text-xs sm:text-sm font-semibold text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 transition-colors"
         >
           View Attendance
         </button>
@@ -329,7 +329,7 @@ export function TodayClasses() {
                 transition={{ delay: index * 0.04 }}
                 className={`relative flex items-center justify-between p-3.5 sm:p-4 rounded-xl border transition-all ${
                   isNext
-                    ? 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900/50 shadow-sm'
+                    ? 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/50 shadow-sm'
                     : 'bg-slate-50/70 dark:bg-slate-800/40 hover:bg-slate-100/70 dark:hover:bg-slate-800/70 border-slate-100 dark:border-slate-800'
                 }`}
               >
@@ -346,7 +346,7 @@ export function TodayClasses() {
                       {subjectDisplayName}
                     </h3>
                     {isNext && (
-                      <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-600 dark:text-blue-300">
+                      <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-rose-100 dark:bg-rose-900/60 text-rose-600 dark:text-rose-300">
                         Next
                       </span>
                     )}

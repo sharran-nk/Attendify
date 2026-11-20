@@ -87,10 +87,10 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-blue-50/50 via-white to-blue-100/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800 relative overflow-hidden transition-colors duration-500">
+        <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-rose-50/50 via-white to-rose-100/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800 relative overflow-hidden transition-colors duration-500">
             {/* Abstract Background Shapes */}
-            <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] bg-blue-400/10 rounded-full blur-[120px] pointer-events-none" />
-            <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] bg-blue-300/10 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] bg-rose-400/10 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] bg-rose-300/10 rounded-full blur-[100px] pointer-events-none" />
 
             <motion.div
                 initial={{ opacity: 0, y: 30 }}
@@ -106,14 +106,14 @@ export default function Login() {
                             initial={{ scale: 0 }} 
                             animate={{ scale: 1 }} 
                             transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
-                            className="w-16 h-16 bg-gradient-to-tr from-blue-600 to-blue-400 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-blue-500/30"
+                            className="w-16 h-16 bg-gradient-to-tr from-rose-500 to-orange-500 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-rose-500/30"
                         >
                             <ShieldCheck className="w-8 h-8 text-white" />
                         </motion.div>
                         <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                             Attendify
                         </h1>
-                        <p className="text-blue-600/80 dark:text-blue-400 font-medium">
+                        <p className="text-rose-600/80 dark:text-rose-400 font-medium">
                             Track your attendance seamlessly
                         </p>
                     </div>
@@ -130,13 +130,13 @@ export default function Login() {
                                 >
                                     <label className="text-sm font-medium text-slate-700 dark:text-slate-300 ml-1">Full Name</label>
                                     <div className="relative group w-full">
-                                        <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                                        <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-rose-500 transition-colors" />
                                         <input 
                                             type="text" 
                                             placeholder="John Doe"
                                             value={name}
                                             onChange={(e) => setName(e.target.value)}
-                                            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white rounded-xl pl-10 pr-4 py-3 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400"
+                                            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white rounded-xl pl-10 pr-4 py-3 outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all placeholder:text-slate-400"
                                         />
                                     </div>
                                 </motion.div>
@@ -146,14 +146,14 @@ export default function Login() {
                         <div className="space-y-1 w-full">
                             <label className="text-sm font-medium text-slate-700 dark:text-slate-300 ml-1">Email address</label>
                             <div className="relative group w-full">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-rose-500 transition-colors" />
                                 <input 
                                     type="email" 
                                     required
                                     placeholder="student@university.edu"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white rounded-xl pl-10 pr-4 py-3 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400"
+                                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white rounded-xl pl-10 pr-4 py-3 outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all placeholder:text-slate-400"
                                 />
                             </div>
                         </div>
@@ -167,14 +167,14 @@ export default function Login() {
                                     <button
                                         type="button"
                                         onClick={handleForgotPassword}
-                                        className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors font-medium mr-1"
+                                        className="text-sm text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 transition-colors font-medium mr-1"
                                     >
                                         Forgot password?
                                     </button>
                                 )}
                             </div>
                             <div className="relative group w-full">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-rose-500 transition-colors" />
                                 <input
                                     id="password"
                                     type={showPassword ? 'text' : 'password'}
@@ -183,7 +183,7 @@ export default function Login() {
                                     placeholder={isSignUp ? 'At least 8 characters' : 'Your password'}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white rounded-xl pl-10 pr-11 py-3 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400"
+                                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white rounded-xl pl-10 pr-11 py-3 outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all placeholder:text-slate-400"
                                 />
                                 <button
                                     type="button"
@@ -199,7 +199,7 @@ export default function Login() {
                         <button 
                             type="submit" 
                             disabled={isLoading || !password || !email}
-                            className="w-full relative flex items-center justify-center gap-2 bg-brand hover:brightness-110 text-white font-medium rounded-xl py-3 transition-colors disabled:opacity-70 disabled:cursor-not-allowed shadow-md shadow-blue-500/20 overflow-hidden mt-4"
+                            className="w-full relative flex items-center justify-center gap-2 bg-brand hover:brightness-110 text-white font-medium rounded-xl py-3 transition-colors disabled:opacity-70 disabled:cursor-not-allowed shadow-md shadow-rose-500/20 overflow-hidden mt-4"
                         >
                             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>{isSignUp ? 'Sign up' : 'Sign in'}</span>}
                         </button>
@@ -230,7 +230,7 @@ export default function Login() {
                         <button
                             type="button"
                             onClick={() => setIsSignUp(!isSignUp)}
-                            className="text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                            className="text-sm font-medium text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 transition-colors"
                         >
                             {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
                         </button>
