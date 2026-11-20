@@ -29,11 +29,8 @@ export function OverallAttendance() {
       aria-label="Overall attendance"
       className={cn(
         'relative overflow-hidden rounded-3xl p-5 text-white shadow-lg',
-        !hasData
-          ? 'bg-gradient-to-br from-slate-500 to-slate-600 shadow-slate-500/20'
-          : isHealthy
-            ? 'bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 shadow-blue-600/25'
-            : 'bg-gradient-to-br from-rose-500 via-red-500 to-orange-500 shadow-red-500/25'
+        'bg-gradient-to-br from-rose-500 via-red-500 to-orange-500 shadow-red-500/25',
+        !hasData && 'from-slate-500 via-slate-500 to-slate-600 shadow-slate-500/20'
       )}
     >
       {/* Decorative arcs */}

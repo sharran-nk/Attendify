@@ -17,7 +17,7 @@
     --popover-foreground: 222 47% 11%;
 
     /* iOS Blue accent */
-    --primary: 211 100% 50%;
+    --primary: 350 86% 55%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 220 14% 96%;
@@ -41,7 +41,7 @@
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 211 100% 50%;
+    --ring: 350 86% 55%;
 
     --radius: 1rem;
 
@@ -62,7 +62,7 @@
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 211 100% 50%;
+    --sidebar-ring: 350 86% 55%;
   }
 
   .dark {
@@ -75,7 +75,7 @@
     --popover: 222 47% 9%;
     --popover-foreground: 220 20% 98%;
 
-    --primary: 211 100% 55%;
+    --primary: 350 90% 62%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 222 30% 14%;
@@ -98,7 +98,7 @@
 
     --border: 222 30% 18%;
     --input: 222 30% 18%;
-    --ring: 211 100% 55%;
+    --ring: 350 90% 62%;
 
     --shadow-sm: 0 1px 2px hsl(0 0% 0% / 0.2);
     --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.3), 0 2px 4px -2px hsl(0 0% 0% / 0.2);
@@ -115,7 +115,7 @@
     --sidebar-accent: 222 30% 14%;
     --sidebar-accent-foreground: 220 20% 98%;
     --sidebar-border: 222 30% 18%;
-    --sidebar-ring: 211 100% 55%;
+    --sidebar-ring: 350 90% 62%;
   }
 }
 
@@ -140,11 +140,11 @@
     @apply bg-card rounded-2xl shadow-[var(--shadow-card)] border border-border/50;
   }
 
-  /* Brand gradient: the same blue as the Overall Attendance card */
+  /* Brand gradient: rose to orange, same as the Overall Attendance card */
   .bg-brand {
-    background-image: linear-gradient(135deg, #3b82f6 0%, #2563eb 55%, #4f46e5 100%);
+    background-image: linear-gradient(135deg, #f43f5e 0%, #ef4444 55%, #f97316 100%);
     color: #fff;
-    box-shadow: 0 6px 16px -6px rgb(37 99 235 / 0.55);
+    box-shadow: 0 6px 16px -6px rgb(244 63 94 / 0.45);
   }
 
   .ios-button {
