@@ -1,169 +1,132 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { 
-  onAuthStateChanged, 
-  signOut,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  updateProfile,
-  updatePassword,
-  User as FirebaseUser
+import {
+    onAuthStateChanged,
+    signOut,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    signInWithPopup,
+    signInWithRedirect,
+    GoogleAuthProvider,
+    sendPasswordResetEmail,
+    updateProfile,
+    User as FirebaseUser,
 } from 'firebase/auth';
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
-import CryptoJS from 'crypto-js';
 
 export interface User {
     id: string;
     name: string;
     email: string;
     picture: string;
-    pinHash?: string;
 }
 
 interface AuthContextType {
     user: User | null;
     isLoading: boolean;
-    setIsVerifyingPin: (val: boolean) => void;
-    loginWithEmail: (email: string, pin: string) => Promise<void>;
-    signupWithEmail: (email: string, pin: string, name: string) => Promise<void>;
+    loginWithEmail: (email: string, password: string) => Promise<void>;
+    signupWithEmail: (email: string, password: string, name: string) => Promise<void>;
+    loginWithGoogle: () => Promise<void>;
+    resetPassword: (email: string) => Promise<void>;
     logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const DUMMY_SALT = "Attendify_Campus_Secure_2026";
-export const getDummyPassword = (email: string) => {
-    return CryptoJS.SHA256(email.toLowerCase().trim() + DUMMY_SALT).toString().substring(0, 20) + "!A1a";
-};
+const toUser = (fu: FirebaseUser, nameOverride?: string): User => ({
+    id: fu.uid,
+    name: nameOverride || fu.displayName || fu.email?.split('@')[0] || 'User',
+    email: fu.email || '',
+    picture: fu.photoURL || `https://api.dicebear.com/7.x/adventurer/svg?seed=${fu.uid}`,
+});
 
-export const hashPin = (pin: string) => {
-    return CryptoJS.SHA256(pin.trim()).toString();
+/** Maps Firebase error codes to messages that are safe and readable to show users. */
+export const getAuthErrorMessage = (error: unknown): string => {
+    const code = (error as { code?: string })?.code;
+    switch (code) {
+        case 'auth/invalid-credential':
+        case 'auth/wrong-password':
+        case 'auth/user-not-found':
+            return 'Incorrect email or password.';
+        case 'auth/email-already-in-use':
+            return 'An account with this email already exists. Try signing in.';
+        case 'auth/weak-password':
+            return 'Password must be at least 8 characters.';
+        case 'auth/invalid-email':
+            return 'Please enter a valid email address.';
+        case 'auth/too-many-requests':
+            return 'Too many attempts. Please wait a moment and try again.';
+        case 'auth/network-request-failed':
+            return 'Network error. Check your connection and try again.';
+        case 'auth/popup-closed-by-user':
+        case 'auth/cancelled-popup-request':
+            return '';
+        default:
+            return 'Authentication failed. Please try again.';
+    }
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [isVerifyingPin, setIsVerifyingPin] = useState(false); // Prevents premature auth state updates during PIN verification
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-            if (isVerifyingPin) return; // Block state updates while checking PIN internally
-
-            if (firebaseUser) {
-                const userData: User = {
-                    id: firebaseUser.uid,
-                    name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
-                    email: firebaseUser.email || '',
-                    picture: firebaseUser.photoURL || `https://api.dicebear.com/7.x/adventurer/svg?seed=${firebaseUser.uid}`,
-                };
-
-                // Immediately set user so AppContext listeners can load data without waiting for network
-                setUser(userData);
-                setIsLoading(false);
-
-                // Fetch/update user document asynchronously in the background
-                (async () => {
-                    try {
-                        const userRef = doc(db, 'users', firebaseUser.uid);
-                        const userSnap = await getDoc(userRef);
-                        if (userSnap.exists()) {
-                            const data = userSnap.data();
-                            setUser(prev => prev ? { ...prev, pinHash: data.pinHash } : prev);
-                        } else {
-                            await setDoc(userRef, userData, { merge: true });
-                        }
-                    } catch (error) {
-                        console.error("Error fetching/creating user document", error);
-                    }
-                })();
-            } else {
+        const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+            if (!firebaseUser) {
                 setUser(null);
                 setIsLoading(false);
+                return;
             }
+
+            const userData = toUser(firebaseUser);
+            // Set immediately so data listeners can start without waiting on the network
+            setUser(userData);
+            setIsLoading(false);
+
+            // Create the profile document on first login (background, non-blocking)
+            (async () => {
+                try {
+                    const userRef = doc(db, 'users', firebaseUser.uid);
+                    const snap = await getDoc(userRef);
+                    if (!snap.exists()) {
+                        await setDoc(userRef, userData, { merge: true });
+                    }
+                } catch (error) {
+                    console.error('Error fetching/creating user document', error);
+                }
+            })();
         });
 
         return () => unsubscribe();
-    }, [isVerifyingPin]);
+    }, []);
 
-    const loginWithEmail = async (email: string, pin: string) => {
-        setIsVerifyingPin(true);
+    const loginWithEmail = async (email: string, password: string) => {
+        await signInWithEmailAndPassword(auth, email.trim(), password);
+    };
+
+    const signupWithEmail = async (email: string, password: string, name: string) => {
+        const cred = await createUserWithEmailAndPassword(auth, email.trim(), password);
+        await updateProfile(cred.user, { displayName: name });
+        setUser(toUser(cred.user, name));
+    };
+
+    const loginWithGoogle = async () => {
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
         try {
-            // First, try logging in with the dummy password (new/migrated users)
-            const dummyPassword = getDummyPassword(email);
-            try {
-                const credential = await signInWithEmailAndPassword(auth, email, dummyPassword);
-                
-                // Fetch user document to check PIN hash
-                const userRef = doc(db, 'users', credential.user.uid);
-                const userSnap = await getDoc(userRef);
-                const userData = userSnap.data();
-                
-                if (userData && userData.pinHash === hashPin(pin)) {
-                    // PIN is correct
-                    setIsVerifyingPin(false); // allow onAuthStateChanged to pick it up
-                    return;
-                } else {
-                    // PIN is wrong
-                    await signOut(auth);
-                    throw new Error("auth/wrong-password");
-                }
-            } catch (err: any) {
-                if (err.message === "auth/wrong-password" || err.code === "auth/invalid-credential") {
-                    // It might be a legacy user whose password is the PIN itself.
-                    try {
-                        const credential = await signInWithEmailAndPassword(auth, email, pin);
-                        // If we are here, legacy login succeeded! Let's migrate them to the new system.
-                        const newPinHash = hashPin(pin);
-                        const userRef = doc(db, 'users', credential.user.uid);
-                        
-                        await updatePassword(credential.user, dummyPassword);
-                        await setDoc(userRef, { pinHash: newPinHash }, { merge: true });
-                        
-                        setIsVerifyingPin(false);
-                        return;
-                    } catch (legacyErr: any) {
-                        throw new Error("Invalid email or PIN.");
-                    }
-                }
-                throw err;
+            await signInWithPopup(auth, provider);
+        } catch (error) {
+            // Popups are unreliable in some mobile / installed-PWA contexts
+            if ((error as { code?: string })?.code === 'auth/popup-blocked') {
+                await signInWithRedirect(auth, provider);
+                return;
             }
-        } finally {
-            // If it failed completely, reset the flag so they are logged out.
-            setIsVerifyingPin(false);
-            // Trigger auth state change evaluation again in case it was left hanging
-            if (!auth.currentUser) {
-                setUser(null);
-            }
+            throw error;
         }
     };
 
-    const signupWithEmail = async (email: string, pin: string, name: string) => {
-        setIsVerifyingPin(true);
-        try {
-            const dummyPassword = getDummyPassword(email);
-            const userCredential = await createUserWithEmailAndPassword(auth, email, dummyPassword);
-            
-            await updateProfile(userCredential.user, {
-                displayName: name
-            });
-
-            const newPinHash = hashPin(pin);
-            const userRef = doc(db, 'users', userCredential.user.uid);
-            await setDoc(userRef, { pinHash: newPinHash }, { merge: true });
-
-            setUser({
-                id: userCredential.user.uid,
-                name: name,
-                email: email,
-                picture: `https://api.dicebear.com/7.x/adventurer/svg?seed=${userCredential.user.uid}`,
-                pinHash: newPinHash
-            });
-        } catch (error) {
-            console.error('Email signup failed:', error);
-            throw error;
-        } finally {
-            setIsVerifyingPin(false);
-        }
+    const resetPassword = async (email: string) => {
+        await sendPasswordResetEmail(auth, email.trim());
     };
 
     const logout = async () => {
@@ -175,7 +138,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, isLoading, setIsVerifyingPin, loginWithEmail, signupWithEmail, logout }}>
+        <AuthContext.Provider
+            value={{ user, isLoading, loginWithEmail, signupWithEmail, loginWithGoogle, resetPassword, logout }}
+        >
             {children}
         </AuthContext.Provider>
     );

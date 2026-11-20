@@ -587,7 +587,7 @@ export default function Subjects() {
                   value={formData.credits}
                   onChange={(e) => setFormData(prev => ({
                     ...prev,
-                    credits: e.target.value
+                    credits: e.target.value === "" ? "" : Number(e.target.value)
                   }))}
                   className="ios-input"
                 />

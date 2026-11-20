@@ -1,52 +1,47 @@
 import React, { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth, getAuthErrorMessage } from '@/contexts/AuthContext';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, Mail, ShieldCheck, Lock, User as UserIcon } from 'lucide-react';
+import { Loader2, Mail, ShieldCheck, Lock, User as UserIcon, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-  InputOTPSeparator,
-} from "@/components/ui/input-otp"
-import { ForgotPinDialog } from '@/components/auth/ForgotPinDialog';
 
 export default function Login() {
-    const { loginWithEmail, signupWithEmail, user } = useAuth();
+    const { loginWithEmail, signupWithEmail, loginWithGoogle, resetPassword, user } = useAuth();
     const navigate = useNavigate();
-    
-    // Global State
+
     const [isLoading, setIsLoading] = useState(false);
     const [isSignUp, setIsSignUp] = useState(false);
-    const [isForgotPinOpen, setIsForgotPinOpen] = useState(false);
-    
-    // Form State
+    const [showPassword, setShowPassword] = useState(false);
+
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
-    const [password, setPassword] = useState(""); // This is a 6 digit PIN
+    const [password, setPassword] = useState("");
 
     // Redirect if already logged in
     if (user) {
         return <Navigate to="/" replace />;
     }
 
+    const showError = (error: unknown) => {
+        const message = getAuthErrorMessage(error);
+        if (message) toast.error(message);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
-        if (password.length !== 6) {
-            toast.error("Please enter a 6-digit PIN");
+
+        if (isSignUp && !name.trim()) {
+            toast.error("Please enter your name");
+            return;
+        }
+        if (isSignUp && password.length < 8) {
+            toast.error("Password must be at least 8 characters");
             return;
         }
 
         setIsLoading(true);
         try {
             if (isSignUp) {
-                if (!name.trim()) {
-                    toast.error("Please enter your name");
-                    setIsLoading(false);
-                    return;
-                }
                 await signupWithEmail(email, password, name.trim());
                 toast.success('Account created successfully');
             } else {
@@ -54,11 +49,41 @@ export default function Login() {
                 toast.success('Logged in successfully');
             }
             navigate('/');
-        } catch (error: any) {
-            toast.error(error.message || 'Authentication failed');
+        } catch (error) {
+            showError(error);
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleGoogle = async () => {
+        setIsLoading(true);
+        try {
+            await loginWithGoogle();
+            navigate('/');
+        } catch (error) {
+            showError(error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleForgotPassword = async () => {
+        if (!email) {
+            toast.error("Enter your email above first, then tap 'Forgot password?'");
+            return;
+        }
+        try {
+            await resetPassword(email);
+        } catch (error) {
+            // Don't reveal whether the account exists; only surface non-account errors
+            const code = (error as { code?: string })?.code;
+            if (code !== 'auth/user-not-found' && code !== 'auth/invalid-email') {
+                showError(error);
+                return;
+            }
+        }
+        toast.success("If an account exists for that email, a reset link is on its way.");
     };
 
     return (
@@ -133,44 +158,73 @@ export default function Login() {
                             </div>
                         </div>
 
-                        <div className="space-y-2 w-full flex flex-col items-center">
+                        <div className="space-y-1 w-full">
                             <div className="flex justify-between w-full">
-                                <label className="text-sm font-medium text-slate-700 dark:text-slate-300 ml-1">
-                                    6-Digit PIN
+                                <label htmlFor="password" className="text-sm font-medium text-slate-700 dark:text-slate-300 ml-1">
+                                    Password
                                 </label>
                                 {!isSignUp && (
                                     <button
                                         type="button"
-                                        onClick={() => setIsForgotPinOpen(true)}
+                                        onClick={handleForgotPassword}
                                         className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors font-medium mr-1"
                                     >
-                                        Forgot PIN?
+                                        Forgot password?
                                     </button>
                                 )}
                             </div>
-                            <InputOTP maxLength={6} value={password} onChange={setPassword} className="gap-2">
-                                <InputOTPGroup>
-                                    <InputOTPSlot index={0} className="w-10 h-12 sm:w-12 sm:h-14 text-lg border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950" />
-                                    <InputOTPSlot index={1} className="w-10 h-12 sm:w-12 sm:h-14 text-lg border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950" />
-                                    <InputOTPSlot index={2} className="w-10 h-12 sm:w-12 sm:h-14 text-lg border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950" />
-                                </InputOTPGroup>
-                                <InputOTPSeparator />
-                                <InputOTPGroup>
-                                    <InputOTPSlot index={3} className="w-10 h-12 sm:w-12 sm:h-14 text-lg border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950" />
-                                    <InputOTPSlot index={4} className="w-10 h-12 sm:w-12 sm:h-14 text-lg border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950" />
-                                    <InputOTPSlot index={5} className="w-10 h-12 sm:w-12 sm:h-14 text-lg border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950" />
-                                </InputOTPGroup>
-                            </InputOTP>
+                            <div className="relative group w-full">
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                                <input
+                                    id="password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    required
+                                    autoComplete={isSignUp ? 'new-password' : 'current-password'}
+                                    placeholder={isSignUp ? 'At least 8 characters' : 'Your password'}
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white rounded-xl pl-10 pr-11 py-3 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400"
+                                />
+                                <button
+                                    type="button"
+                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                    onClick={() => setShowPassword(v => !v)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                                >
+                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
+                            </div>
                         </div>
 
                         <button 
                             type="submit" 
-                            disabled={isLoading || password.length !== 6 || !email}
+                            disabled={isLoading || !password || !email}
                             className="w-full relative flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl py-3 transition-colors disabled:opacity-70 disabled:cursor-not-allowed shadow-md shadow-blue-500/20 overflow-hidden mt-4"
                         >
                             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>{isSignUp ? 'Sign up' : 'Sign in'}</span>}
                         </button>
                     </form>
+
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
+                        <span className="text-xs uppercase tracking-wider text-slate-400">or</span>
+                        <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
+                    </div>
+
+                    <button
+                        type="button"
+                        onClick={handleGoogle}
+                        disabled={isLoading}
+                        className="w-full flex items-center justify-center gap-3 mb-6 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-medium rounded-xl py-3 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                    >
+                        <svg className="w-5 h-5" viewBox="0 0 48 48" aria-hidden="true">
+                            <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.9 2.4 30.4 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/>
+                            <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/>
+                            <path fill="#FBBC05" d="M10.5 28.7c-.5-1.5-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.4 0 20.1 0 24s.9 7.6 2.6 10.8l7.9-6.1z"/>
+                            <path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.8 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/>
+                        </svg>
+                        Continue with Google
+                    </button>
                     
                     <div className="text-center mb-6">
                         <button
@@ -192,10 +246,6 @@ export default function Login() {
                 </div>
             </motion.div>
 
-            <ForgotPinDialog 
-                isOpen={isForgotPinOpen} 
-                onClose={() => setIsForgotPinOpen(false)} 
-            />
         </div>
     );
 }
