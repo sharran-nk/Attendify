@@ -150,8 +150,7 @@ export default function Settings() {
               <button
                 onClick={() => showPrompt()}
                 className={cn(
-                  'min-h-10 rounded-full bg-primary/10 px-4 text-sm font-semibold text-primary',
-                  'transition-colors hover:bg-primary/20'
+                  'min-h-10 rounded-full bg-brand px-4 text-sm font-semibold hover:brightness-110',
                 )}
               >
                 Install

@@ -98,7 +98,7 @@ export default function AttendanceCalendar() {
                   aria-label={format(day, 'EEEE, MMMM d')}
                   aria-pressed={isSelected}
                   className={`flex flex-col items-center rounded-xl py-2 transition-[background-color,box-shadow,color] duration-200 ${isSelected
-                    ? 'bg-primary text-primary-foreground shadow-md shadow-primary/30'
+                    ? 'bg-brand'
                     : isToday
                       ? 'bg-primary/10 text-primary ring-1 ring-primary/30'
                       : 'hover:bg-muted'

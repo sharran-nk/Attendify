@@ -252,7 +252,7 @@ export function TodayClasses() {
                 <div className="mt-4">
                   <button
                     onClick={() => navigate('/subjects')}
-                    className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all"
+                    className="inline-flex items-center gap-1.5 bg-brand hover:brightness-110 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all"
                   >
                     Add Subjects to Attendance
                   </button>
@@ -271,7 +271,7 @@ export function TodayClasses() {
                         if (timetableInput) timetableInput.click();
                         else navigate('/subjects');
                       }}
-                      className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all"
+                      className="inline-flex items-center gap-2 bg-brand hover:brightness-110 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all"
                     >
                       <Upload className="w-3.5 h-3.5" />
                       Upload Timetable

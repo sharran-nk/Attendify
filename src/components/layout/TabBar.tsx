@@ -41,16 +41,16 @@ export function TabBar() {
               {isActive && (
                 <motion.div
                   layoutId="activeTab"
-                  className="absolute inset-0 bg-primary/10 rounded-xl"
+                  className="absolute inset-0 bg-brand rounded-xl"
                   transition={{ type: 'spring', duration: 0.5 }}
                 />
               )}
               <tab.icon
-                className={`w-5 h-5 transition-colors relative z-10 ${isActive ? 'text-primary' : 'text-muted-foreground'
+                className={`w-5 h-5 transition-colors relative z-10 ${isActive ? 'text-white' : 'text-muted-foreground'
                   }`}
               />
               <span
-                className={`text-[10px] mt-1 font-medium transition-colors relative z-10 ${isActive ? 'text-primary' : 'text-muted-foreground'
+                className={`text-[10px] mt-1 font-medium transition-colors relative z-10 ${isActive ? 'text-white' : 'text-muted-foreground'
                   }`}
               >
                 {tab.label}

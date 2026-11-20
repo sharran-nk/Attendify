@@ -155,7 +155,7 @@ export default function Subjects() {
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={() => setIsAddOpen(true)}
-          className="w-10 h-10 rounded-full bg-primary flex items-center justify-center"
+          className="w-10 h-10 rounded-full bg-brand flex items-center justify-center"
         >
           <Plus className="w-5 h-5 text-primary-foreground" />
         </motion.button>
@@ -359,7 +359,7 @@ export default function Subjects() {
                           <div className="space-y-2.5 pt-2 border-t border-border/40">
                             <div className="flex items-center justify-between">
                               <h4 className="text-[13px] font-medium text-muted-foreground">Course Materials</h4>
-                              <label className="cursor-pointer text-xs bg-primary text-primary-foreground px-2 py-1 rounded-md hover:bg-primary/90 transition-colors">
+                              <label className="cursor-pointer text-xs bg-brand px-2 py-1 rounded-md hover:bg-primary/90 transition-colors">
                                 Upload PDF
                                 <input
                                   type="file"

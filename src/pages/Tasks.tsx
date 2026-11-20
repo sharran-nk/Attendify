@@ -107,7 +107,7 @@ export default function Tasks() {
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={() => setIsAddOpen(true)}
-          className="w-10 h-10 rounded-full bg-primary flex items-center justify-center"
+          className="w-10 h-10 rounded-full bg-brand flex items-center justify-center"
         >
           <Plus className="w-5 h-5 text-primary-foreground" />
         </motion.button>
@@ -126,7 +126,7 @@ export default function Tasks() {
                 onClick={() => setFilter(f)}
                 className={`flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium transition-[background-color,color,box-shadow] duration-200 ${
                   filter === f
-                    ? 'bg-primary text-primary-foreground shadow-md shadow-primary/25'
+                    ? 'bg-brand'
                     : 'text-muted-foreground hover:bg-muted'
                 }`}
               >

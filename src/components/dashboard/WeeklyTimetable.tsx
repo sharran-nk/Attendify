@@ -36,7 +36,7 @@ export function WeeklyTimetable() {
         className={`flex items-center gap-4 ${settings.timetableImage ? 'cursor-pointer' : ''}`}
         onClick={() => { if (settings.timetableImage) setIsOpen(true); }}
       >
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand">
           <ImageIcon className="h-5 w-5" />
         </div>
         <div>

@@ -199,7 +199,7 @@ export default function Login() {
                         <button 
                             type="submit" 
                             disabled={isLoading || !password || !email}
-                            className="w-full relative flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl py-3 transition-colors disabled:opacity-70 disabled:cursor-not-allowed shadow-md shadow-blue-500/20 overflow-hidden mt-4"
+                            className="w-full relative flex items-center justify-center gap-2 bg-brand hover:brightness-110 text-white font-medium rounded-xl py-3 transition-colors disabled:opacity-70 disabled:cursor-not-allowed shadow-md shadow-blue-500/20 overflow-hidden mt-4"
                         >
                             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>{isSignUp ? 'Sign up' : 'Sign in'}</span>}
                         </button>
