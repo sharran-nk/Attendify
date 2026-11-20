@@ -5,7 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppProvider } from "@/contexts/AppContext";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { TabBar } from "@/components/layout/TabBar";
+import { AppShell } from "@/components/layout/AppShell";
+import { MotionConfig } from "framer-motion";
 import Dashboard from "./pages/Dashboard";
 import Subjects from "./pages/Subjects";
 import AttendanceCalendar from "./pages/AttendanceCalendar";
@@ -23,7 +24,7 @@ const AppContent = () => {
   useAttendanceReminder();
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-background">
+      <AppShell>
         <Routes>
           <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/subjects" element={<ProtectedRoute><Subjects /></ProtectedRoute>} />
@@ -33,9 +34,8 @@ const AppContent = () => {
           <Route path="/login" element={<Login />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
-        <TabBar />
-        <InstallPrompt />
-      </div>
+      </AppShell>
+      <InstallPrompt />
     </BrowserRouter>
   );
 };
@@ -50,7 +50,9 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
-            <AppContent />
+            <MotionConfig reducedMotion="user">
+              <AppContent />
+            </MotionConfig>
           </TooltipProvider>
     </AppProvider>
     </AuthProvider>

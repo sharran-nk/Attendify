@@ -8,19 +8,20 @@ export default {
     container: {
       center: true,
       padding: "1rem",
-      screens: {
-        sm: "430px",
-        md: "430px",
-        lg: "430px",
-        xl: "430px",
-        "2xl": "430px",
-      },
     },
     extend: {
       fontFamily: {
-        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+        sans: ['"Inter Tight"', 'Inter', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'sans-serif'],
+        display: ['"Bricolage Grotesque"', '"Inter Tight"', '-apple-system', 'sans-serif'],
+      },
+      fontSize: {
+        // 12 / 14 / 16 / 20 / 28 / 48 / 72 type scale
+        stat: ['3rem', { lineHeight: '1', letterSpacing: '-0.03em' }],
+        hero: ['4.5rem', { lineHeight: '0.95', letterSpacing: '-0.04em' }],
       },
       colors: {
+        margin: "hsl(var(--margin))",
+        rule: "hsl(var(--rule))",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
