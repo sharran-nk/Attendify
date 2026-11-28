@@ -23,6 +23,7 @@
     <img src="https://img.shields.io/badge/Vite_5-646CFF?style=flat-square&logo=vite&logoColor=white" alt="Vite" />
     <img src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
     <img src="https://img.shields.io/badge/Firebase_Firestore-FFCA28?style=flat-square&logo=firebase&logoColor=black" alt="Firebase" />
+    <img src="https://img.shields.io/badge/Vitest-6E9F18?style=flat-square&logo=vitest&logoColor=white" alt="Vitest" />
     <img src="https://img.shields.io/badge/PWA_Ready-5A0FC8?style=flat-square&logo=pwa&logoColor=white" alt="PWA" />
     <img src="https://img.shields.io/badge/Docker_Ready-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker" />
     <a href="https://github.com/sharran-nk/Attendify/actions/workflows/attendify-ci-cd.yml">
@@ -74,8 +75,9 @@
 * **Academic Tasks**: Organize to-do items by deadline, priority, and one-click export to Google Calendar.
 
 ### 4. 🔒 Authentication & Cloud Sync
-* **Email + Hashed PIN**: Fast, passwordless login using SHA-256 PIN security.
-* **OTP Reset**: Seamless PIN retrieval flow delivered via EmailJS.
+* **Email + Password Sign-in**: Secure account creation and login powered by Firebase Authentication.
+* **Google Sign-in**: One-tap login with your Google account.
+* **Password Reset & Email Verification**: Handled by Firebase, using branded HTML email templates (see [`email-templates/`](email-templates/)).
 * **Real-Time Cloud Synchronization**: Firestore backed, instant live update across multiple devices.
 * **PWA & Offline Readiness**: Service worker precaching, custom add-to-homescreen triggers, and configurable morning lecture alerts.
 
@@ -86,14 +88,14 @@
 ```mermaid
 graph TD
     Client["React 18 + Vite PWA<br/>(Tailwind CSS + shadcn/ui)"]
-    Auth["Firebase Auth<br/>(Email + Hashed PIN)"]
+    Auth["Firebase Auth<br/>(Email/Password + Google)"]
     DB[("Cloud Firestore<br/>(Realtime Sync)")]
-    EmailSvc["EmailJS<br/>(OTP Password Reset)"]
+    Mail["Firebase Email Templates<br/>(Verify & Reset)"]
     DocSvc["jsPDF Engine<br/>(Reports & Audit Export)"]
 
     Client -->|User Authentication| Auth
     Client -->|Live State Listeners| DB
-    Client -->|Forgot PIN Flow| EmailSvc
+    Auth -->|Verification & Reset Emails| Mail
     Client -->|Client-side Generation| DocSvc
 ```
 
@@ -101,9 +103,10 @@ graph TD
 | :--- | :--- |
 | **Frontend Core** | React 18, TypeScript, Vite 5, React Router v6 |
 | **Styling & Motion** | Tailwind CSS, shadcn/ui (Radix Primitives), Framer Motion, Lucide Icons |
-| **Cloud & Storage** | Firebase Authentication, Cloud Firestore |
+| **Cloud & Storage** | Firebase Authentication (Email/Password, Google), Cloud Firestore |
 | **Date & Documents** | `date-fns`, `jspdf`, `jspdf-autotable` |
-| **Notifications & Mail**| Native Web Notification API, EmailJS SDK, Sonner Toasts |
+| **Notifications & Mail**| Native Web Notification API, Firebase Auth email templates, Sonner Toasts |
+| **Testing** | Vitest, React Testing Library, jsdom, V8 coverage |
 | **DevOps & Container** | Docker (Multi-stage Node 22 + Nginx Alpine), GitHub Actions CI/CD |
 
 ---
@@ -147,17 +150,19 @@ attendify/
 ├── src/
 │   ├── components/
 │   │   ├── attendance/       # PDF Report Generation & Export Modal
-│   │   ├── auth/             # Login, ProtectedRoute & PIN Recovery Dialog
+│   │   ├── auth/             # ProtectedRoute (auth guard)
 │   │   ├── dashboard/        # Overall Attendance Ring, Timetable & Today's Classes
 │   │   ├── layout/           # PageContainer & iOS Glass TabBar
 │   │   ├── pwa/              # Native Web Install Prompts
 │   │   └── ui/               # shadcn / Radix UI design tokens
 │   ├── contexts/             # AppContext (Firestore Sync) & AuthContext
 │   ├── hooks/                # PWA Install & Morning Reminder Hooks
-│   ├── lib/                  # Firebase Client & Timetable Generators
+│   ├── lib/                  # Firebase Client, Utils & Timetable Generators
 │   ├── pages/                # Dashboard, Subjects, Calendar, Tasks, Settings, Login
 │   ├── types/                # Domain Types (attendance.ts, user.ts)
-│   └── utils/                # Calculation Formulas & jsPDF Document Layouts
+│   ├── utils/                # Calculation Formulas & jsPDF Document Layouts
+│   └── test/                 # Vitest setup (unit tests live beside source as *.test.ts[x])
+├── email-templates/          # Branded Firebase Auth email HTML templates
 ├── Dockerfile                # Multi-stage production container
 ├── nginx.conf                # High-performance SPA routing & caching
 ├── firebase.json             # Firebase Hosting rewrites & rules
@@ -186,14 +191,24 @@ VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
 VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 VITE_FIREBASE_APP_ID=your_app_id
 
-# EmailJS Configuration (for PIN Recovery)
 ```
+
+In the Firebase Console, enable **Authentication → Sign-in method → Email/Password** and **Google**. To brand the verification / reset emails, paste the files from [`email-templates/`](email-templates/) into **Authentication → Templates**.
 
 ### 3. Launch Development Server
 ```bash
 npm run dev
 ```
 Visit `http://localhost:5173` to view the app.
+
+### 4. Run Tests & Lint
+```bash
+npm test               # run the Vitest suite once
+npm run test:watch     # watch mode
+npm run test:coverage  # coverage report
+npm run lint           # ESLint
+```
+Tests cover the attendance calculations, PDF/export utilities, the morning reminder hook, timetable generation and the attendance ring component.
 
 ---
 
