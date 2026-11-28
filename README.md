@@ -77,7 +77,7 @@
 ### 4. 🔒 Authentication & Cloud Sync
 * **Email + Password Sign-in**: Secure account creation and login powered by Firebase Authentication.
 * **Google Sign-in**: One-tap login with your Google account.
-* **Password Reset & Email Verification**: Handled by Firebase, using branded HTML email templates (see [`email-templates/`](email-templates/)).
+* **Password Reset & Email Verification**: Handled by Firebase.
 * **Real-Time Cloud Synchronization**: Firestore backed, instant live update across multiple devices.
 * **PWA & Offline Readiness**: Service worker precaching, custom add-to-homescreen triggers, and configurable morning lecture alerts.
 
@@ -90,7 +90,7 @@ graph TD
     Client["React 18 + Vite PWA<br/>(Tailwind CSS + shadcn/ui)"]
     Auth["Firebase Auth<br/>(Email/Password + Google)"]
     DB[("Cloud Firestore<br/>(Realtime Sync)")]
-    Mail["Firebase Email Templates<br/>(Verify & Reset)"]
+    Mail["Firebase Emails<br/>(Verify & Reset)"]
     DocSvc["jsPDF Engine<br/>(Reports & Audit Export)"]
 
     Client -->|User Authentication| Auth
@@ -105,7 +105,7 @@ graph TD
 | **Styling & Motion** | Tailwind CSS, shadcn/ui (Radix Primitives), Framer Motion, Lucide Icons |
 | **Cloud & Storage** | Firebase Authentication (Email/Password, Google), Cloud Firestore |
 | **Date & Documents** | `date-fns`, `jspdf`, `jspdf-autotable` |
-| **Notifications & Mail**| Native Web Notification API, Firebase Auth email templates, Sonner Toasts |
+| **Notifications & Mail**| Native Web Notification API, Firebase Auth emails, Sonner Toasts |
 | **Testing** | Vitest, React Testing Library, jsdom, V8 coverage |
 | **DevOps & Container** | Docker (Multi-stage Node 22 + Nginx Alpine), GitHub Actions CI/CD |
 
@@ -162,7 +162,6 @@ attendify/
 │   ├── types/                # Domain Types (attendance.ts, user.ts)
 │   ├── utils/                # Calculation Formulas & jsPDF Document Layouts
 │   └── test/                 # Vitest setup (unit tests live beside source as *.test.ts[x])
-├── email-templates/          # Branded Firebase Auth email HTML templates
 ├── Dockerfile                # Multi-stage production container
 ├── nginx.conf                # High-performance SPA routing & caching
 ├── firebase.json             # Firebase Hosting rewrites & rules
@@ -193,7 +192,7 @@ VITE_FIREBASE_APP_ID=your_app_id
 
 ```
 
-In the Firebase Console, enable **Authentication → Sign-in method → Email/Password** and **Google**. To brand the verification / reset emails, paste the files from [`email-templates/`](email-templates/) into **Authentication → Templates**.
+In the Firebase Console, enable **Authentication → Sign-in method → Email/Password** and **Google**.
 
 ### 3. Launch Development Server
 ```bash
